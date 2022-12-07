@@ -59,7 +59,7 @@ def gui():
                    button_color=('white', 'chocolate'))]], size=(180, 100))
     
     frame3 = sg.Frame('README', [
-        [sg.Text("TManual, a tool to assist in manually measuring length development of structures")],
+        [sg.Text("TManual, a tool to assist in manually measuring length development of gallery structures")],
         [sg.Text("Files should be consecutive image files, named 'id_number.jpg'\n"
                  "    e.g., TunnelA_00.jpg, TunnelA_01.jpg, TunnelA_02.jpg, ..., "
                  "TunnelA_20.jpg, TunnelB_00.jpg, TunnelB_01.jpg, ...")],
@@ -72,10 +72,10 @@ def gui():
         [sg.Text("3. Measure tunnel length\n"
                  "   LC to measure tunnel length.\n"
                  "   RC to next or finish at the end.\n"
-                 "   Q:undo   Z:zoom in (x2)  X:stop zoom\n"
+                 "   Q:undo   Z:zoom in (x2)  X:stop zoom  Esc:finish\n"
                  "   * Branching tunnels should start in contact with the line of previous tunnels")],
         [sg.Text("4. Identify nodes\n"
-                 "   LC:node  RC:finish  Q:undo.\n"
+                 "   LC:node  RC:finish  Q:undo  Z:zoom in (x2)  X:stop zoom\n"
                  "   * Place nodes on the tunnel lines")],
         [sg.Text("5. Set scale\n"
                  "   Drag to set the scale. RC to finish.\n")],

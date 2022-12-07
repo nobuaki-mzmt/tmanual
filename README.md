@@ -11,3 +11,8 @@ There are several different ways to get TManual
 # Contributor
 -Nobuaki Mizumoto, Okinawa Institute of Science and Technology
 
+# Acknowledgements
+
+# License
+TManual is released under
+
