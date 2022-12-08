@@ -30,7 +30,7 @@ def gui():
          ],
         [sg.Text("File extension (default = jpg)"),
          sg.In(key='-FILE_EXTENSION-', size=(15, 1))]
-    ], size=(800, 130))
+    ], size=(1000, 160))
 
     frame_measure_param = sg.Frame('Measurement parameters', [
         [sg.Text("skip analyzed files"),
@@ -42,14 +42,14 @@ def gui():
          sg.Text("Font size (default = 2)"),
          sg.In(key='-FONT_SIZE-', size=(8, 1))
         ]
-    ], size=(800, 90))
+    ], size=(1000, 100))
     
     frame_post_param = sg.Frame('Post-analysiss parameters', [
         [sg.Text("length of the scale object (in mm)"),
          sg.In(key='-SCALE_OBJECT-', size=(8, 1)),
          sg.Text("output image (post)"),
          sg.Combo(['true', 'false'], default_value="true", size=(6, 1), key="-OUTPUT_IMAGE-")
-         ]    ], size=(800, 60))
+         ]    ], size=(1000, 60))
 
     frame2 = sg.Frame('Measurement', [
         [sg.Submit(button_text='Measurement start', size=(20, 3), key='measurement_start')]], size=(180, 100))
@@ -81,7 +81,7 @@ def gui():
                  "   Drag to set the scale. RC to finish.\n")],
         [sg.Text("Post-analysis\n"
                  "   Identify primary, secondary, tertiary, ..., tunnels and summarize analysis results\n"
-                 "   Read res.pickle from output folder")]], size=(1000, 600))
+                 "   Read res.pickle from output folder")]], size=(1200, 700))
     
     frame_buttons = sg.Column([[frame2], [frame4]])
     frame_param = sg.Column([[frame_file],[frame_measure_param],[frame_post_param]])
