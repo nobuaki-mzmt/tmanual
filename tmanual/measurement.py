@@ -14,8 +14,7 @@ import math
 from keyboard import press
 import pyautogui as pag
 
-#from tmanual.image import tunnel_draw, outlined_text, object_drawing, image_format, ImgData
-from image import tunnel_draw, outlined_text, object_drawing, image_format, ImgData
+from tmanual.image import tunnel_draw, outlined_text, object_drawing, image_format, ImgData
 vcol = [[37, 231, 253], [98, 201, 94], [140, 145, 33],  [139, 82, 59], [84, 1, 68]]  # viridis colors in BGR
 
 def zoom_func(img_z, mouse_xy, img_shape):

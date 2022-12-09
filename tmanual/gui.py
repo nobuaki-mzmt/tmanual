@@ -9,10 +9,8 @@ GUI collects parameters for analysis and run either
 import PySimpleGUI as sg
 import os
 
-#from tmanual import measurement
-#from tmanual import postanalysis
-from measurement import measurement
-from postanalysis import postanalysis
+from tmanual import measurement
+from tmanual import postanalysis
 
 def gui():
     sg.theme('Dark')
