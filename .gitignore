@@ -1,1 +1,4 @@
 tmanual.egg-info
+standalone/tmanual_standalone.build
+standalone/tmanual_standalone.dist
+standalone/tmanual_standalone.onefile-build

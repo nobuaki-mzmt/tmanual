@@ -1,10 +1,10 @@
 # TManual: assisting in manual measurements of length development
 ![time development of termite foraging tunnels](images/development_eg.png)
 
-**TManual** is a python program that assists in manual measurements of length development (now available as preprint [(Mizumoto 2022)](https://doi.org/XXXXXXXXXX)). It can be used to measure the objects from sequential images, such as snapshots, timelaps, and video clips. It is designed especially for gallery structures built by animals, but can be applied to any objects. 
+**TManual** is a python program that assists in manual measurements of length development (now available as preprint [(Mizumoto 2022)](https://doi.org/XXXXXXXXXX)). It can be used to measure the length of objects from sequential images, such as snapshots, timelaps, and video clips. It is designed especially for gallery structures built by animals, but can be applied to any objects. 
 
 ## Get TManual
-TManual can be installed as 1) a Python package, or 2) EXE file for Windows users
+TManual can be installed as 1) a Python package, 2) EXE file for Windows users, or 3) standalone python file.
 
 ### Python package
 ```
@@ -16,6 +16,14 @@ Then run the following in python.
 import tmanual
 tmanaul.gui()
 ```
+
+
+### EXE file
+click here to download
+
+
+### Standalone python file
+click here to download
 
 
 

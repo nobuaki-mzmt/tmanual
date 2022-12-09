@@ -193,7 +193,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
         # endregion
 
         # region --- 2-2.  Measure tunnel length --- #
-        img = img_data.note_plot(img_read.copy(), '3.Tunnels  ', font_size)
+        img = img_data.note_plot(img_read.copy(), '3.Length  ', font_size)
 
         # draw previous tunnel
         num_old_tunnel = len(img_data.tunnel)
