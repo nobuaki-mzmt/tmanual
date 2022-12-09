@@ -41,6 +41,3 @@ Please see the detail for the preprint [(Mizumoto 2022)](https://doi.org/XXXXXXX
 ## Contributor
 Nobuaki Mizumoto, Okinawa Institute of Science and Technology  
 Contact: nobuaki.mzmt at gmail.com
-
-#### Acknowledgments
-I thank Sang-Bin Lee for informing me that this tool is helpful for those other than myself and encouraging me to publish this tool as a paper, with valuable advice; Kaitlin Gazdick for their valuable input in designing the specifications and several sample images; and Jamie M. Kass for advice for depositing source codes. This study is supported by a JSPS Research Fellowships for Young Scientists CPD (grant number: 20J00660).
