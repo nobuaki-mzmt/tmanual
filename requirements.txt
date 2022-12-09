@@ -1,9 +1,7 @@
 requests==2.22.0
-glob
-keyboard
-numpy
-opencv-python
-pyautogui
-PySimpleGUI
-re
-tqdm
+keyboard==0.13.5
+numpy==1.23.2
+opencv-python==4.6.0.66
+PyAutoGUI==0.9.53
+PySimpleGUI==4.60.3
+tqdm==4.64.1
