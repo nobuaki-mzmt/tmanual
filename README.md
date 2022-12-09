@@ -19,8 +19,8 @@ tmanaul.gui()
 
 ### EXE file
 click here to download
-<a id="raw-url" href="https://raw.githubusercontent.com/nobuaki-mzmt/tmanual/tmanual_standalone.exe">Download FILE</a>
-
+<a id="raw-url" href="https://github.com/nobuaki-mzmt/tmanual/standalone/tmanual_standalone.exe">Download FILE</a>
+<a download="tmanual_standalone.exe" href="standalone/tmanual_standalone.exe" title="exe"> Here </a>
 
 
 ### Standalone python file
