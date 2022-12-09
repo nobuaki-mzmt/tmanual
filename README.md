@@ -8,6 +8,7 @@
 * Account for the branching structure by indicating branching nodes.
 * Taking over all data-handling processes (scaling, zero-adjustment, measurement, branch structures, creating tidy dataframe), so that users can only focus on clicking without interruptions.
 * Appending data for sequential images to easily trace time-development.
+* **Realize stress-free and efficient manual measurement of a large number of images.**
 
 ## How to get TManual
 TManual can be installed as 1) a Python package, 2) an [EXE file](standalone/tmanual_standalone.exe) for Windows users, or 3) a standalone [python file](tandalone/tmanual_standalone.py).
