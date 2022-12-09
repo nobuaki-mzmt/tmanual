@@ -4,10 +4,20 @@
 **TManual** is a python program that assists in manual measurements of length development (now available as preprint [(Mizumoto 2022)](https://doi.org/XXXXXXXXXX)). It can be used to measure the objects from sequential images, such as snapshots, timelaps, and video clips. It is designed especially for gallery structures built by animals, but can be applied to any objects. 
 
 ## Get TManual
-There are several different ways to get TManual
-1. Import it as a Python package.
-2. Download tmanual_standalone.py
-3. EXE file is available for Windows users
+TManual can be installed as 1) a Python package, or 2) EXE file for Windows users
+
+### Python package
+```
+pip install git+https://github.com/nobuaki-mzmt/tmanual
+```
+As all requirements will be installed together, I recommend using virtual environment (e.g., [Anaconda](https://www.anaconda.com/)).
+Then run the following in python.
+```python
+import tmanual
+tmanaul.gui()
+```
+
+
 
 ## Who wants to use TManual?
 Do you want to measure the length of something from many images? (especially sequential images for time develoments?) Here is TManual for you. TManual provides a user interface to click to indicate the shapes of the objects and take over all other processes, including scaling the unit, zero-adjustment, mesuring the length, and assigning nested structures (if you work of gallery systems).
