@@ -1,0 +1,9 @@
+requests==2.22.0
+glob
+keyboard
+numpy
+opencv-python
+pyautogui
+PySimpleGUI
+re
+tqdm

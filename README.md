@@ -1,4 +1,4 @@
-# TManual: a software to assist in manual measurements of length development in animal architectures
+# TManual: assisting in manual measurements of length development
 ![time development of termite foraging tunnels](images/development_eg.png)
 
 **TManual** is a python program that assists in manual measurements of length development (now available as preprint [(Mizumoto 2022)](https://doi.org/XXXXXXXXXX)). It can be used to measure the objects from sequential images, such as snapshots, timelaps, and video clips. It is designed especially for gallery structures built by animals, but can be applied to any objects. 
