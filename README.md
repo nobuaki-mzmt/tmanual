@@ -32,6 +32,10 @@ Download [here](standalone/tmanual_standalone.py).
 As in the package, you will need to prepare requirements listed [here](requirements.txt).
 
 
+### How to use TManual
+There is a README on a gui interface.
+Please see detail for the preprint [(Mizumoto 2022)](https://doi.org/XXXXXXXXXX)). 
+![snapshot of the gui](images/gui.png)
 
 ### Contributor
 -Nobuaki Mizumoto, Okinawa Institute of Science and Technology
