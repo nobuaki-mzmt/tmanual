@@ -11,6 +11,7 @@ import os
 
 from tmanual import measurement
 from tmanual import postanalysis
+from tmanual import edit_nodes
 
 def gui():
     sg.theme('Dark')
@@ -61,12 +62,16 @@ def gui():
             
 
 
-    frame2 = sg.Frame('Measurement', [
+    frame_measure_buttom = sg.Frame('Measurement', [
         [sg.Submit(button_text='Measurement start', size=(20, 3), key='measurement_start')]], size=(180, 100))
     
-    frame4 = sg.Frame('Post-analysis', [
+    frame_post_buttom = sg.Frame('Post-analysis', [
         [sg.Submit(button_text='Post-analysis start', size=(20, 3), key='post_analysis_start',
                    button_color=('white', 'chocolate'))]], size=(180, 100))
+
+    frame_edit_buttom = sg.Frame('Edit nodes', [
+        [sg.Submit(button_text='Edit nodes', size=(20, 3), key='edit_nodes_start',
+                   button_color=('white', 'gray'))]], size=(180, 100))
     
     frame3 = sg.Frame('Manual', [
         [sg.Text("Files should be consecutive image files, named 'id_number.jpg'\n"
@@ -92,7 +97,7 @@ def gui():
         [sg.Text("*1: under this threhold, node and galleries are considered as contact. need to be smaller values for small galleries in large image")]
         ], size=(1200, 600))
     
-    frame_buttons = sg.Column([[frame2], [frame4]])
+    frame_buttons = sg.Column([[frame_measure_buttom], [frame_post_buttom], [frame_edit_buttom]])
     frame_param = sg.Column([[frame_file],[frame_measure_param],[frame_post_param],[frame_draw_param]])
     layout = [[frame_param, frame_buttons], [frame3]]
     
@@ -216,5 +221,65 @@ def gui():
                 
                 message = postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, output_image, object_size, font_size, text_drawing)
                 sg.popup(message)
+
+            elif event == 'edit_nodes_start':
+
+                # file info
+                if len(values["-IN_FOLDER_NAME-"]) == 0 and len(values["-IN_FILES_NAME-"]) == 0:
+                    print("no input!")
+                    continue
+
+                elif len(values["-IN_FILES_NAME-"]) > 0:  # file names provided
+                    in_files = values["-IN_FILES_NAME-"]
+                    if len(values["-OUT_FOLDER_NAME-"]) == 0:
+                        if len(values["-IN_FOLDER_NAME-"]) > 0:
+                            in_dir = values["-IN_FOLDER_NAME-"] + "/"
+                            out_dir = in_dir+"/tmanual/"
+                            if not os.path.exists(out_dir):
+                                os.makedirs(out_dir)
+                        else:
+                            print("no output directly!")
+                            continue
+                    else:
+                        out_dir = values["-OUT_FOLDER_NAME-"]+"/"
+                    in_dir = 0
+
+                else:
+                    in_dir = values["-IN_FOLDER_NAME-"]+"/"
+                    in_files = 0
+                    if len(values["-OUT_FOLDER_NAME-"]) == 0:
+                        out_dir = in_dir+"/tmanual/"
+                        if not os.path.exists(out_dir):
+                            os.makedirs(out_dir)
+                    else:
+                        out_dir = values["-OUT_FOLDER_NAME-"]+"/"
+                
+                # parameters
+                if len(values["-FILE_EXTENSION-"]) == 0:
+                    file_extension = "jpg"
+                else:
+                    file_extension = values["-FILE_EXTENSION-"]
+
+                if len(values["-LINE_WIDTH-"]) == 0:
+                    object_size = 5
+                else:
+                    object_size = int(values["-LINE_WIDTH-"])
+                
+                if len(values["-FONT_SIZE-"]) == 0:
+                    font_size = 2
+                else:
+                    font_size = int(values["-FONT_SIZE-"])
+                
+                text_drawing = values["-TEXT_DRAWNING-"]
+                if text_drawing == "true":
+                    text_drawing = True
+                else:
+                    text_drawing = False
+
+                print("input dir: "+str(in_dir))
+                print("input files: "+str(in_files))
+                print("output dir: "+out_dir)
+                edit_nodes(in_dir, in_files, out_dir, file_extension, object_size, font_size, text_drawing)
     
+             
     window.close()
