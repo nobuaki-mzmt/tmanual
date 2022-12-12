@@ -231,7 +231,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
                                              None, count, vcol[4], object_size*zoom[0]*zoom[1]*zoom[2], font_size*zoom[0]*zoom[1]*zoom[2], draw_number=False)
                         press('p')
                     else:
-                        press('e')
+                        press('f')
 
                 cv2.imshow('window', img)
 
@@ -240,7 +240,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
             if k == ord("p"):
                 count = count + 1
                 img_data.tunnel.append(current_tunnel)
-            elif k == ord("e"):
+            elif k == ord("f"):
                 break
             elif k == ord("z"):
                 if zoom[1] == 2 and zoom[2] == 1:
@@ -261,6 +261,16 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
                 img = object_drawing(img, img_data.ref_xy, None, img_data.tunnel[0:count], None,
                                      0, vcol[4], object_size, font_size, draw_number=False)
                 zoom, zoom_xy = [1, 1, 1], [np.array([0, 0]), np.array([0, 0]), np.array([0, 0])]
+
+            if k == ord("e"):
+                if num_old_tunnel > 0 and count < num_old_tunnel:
+                    count_temp = count
+                    for i_count in range(count_temp, num_old_tunnel):
+                        current_tunnel = copy.copy(tunnel_pre[i_count])
+                        img = object_drawing(img, None, None, [((current_tunnel*zoom[0]-zoom_xy[0])*zoom[1]-zoom_xy[1])*zoom[2]-zoom_xy[2]],
+                                             None, count, vcol[4], object_size*zoom[0]*zoom[1]*zoom[2], font_size*zoom[0]*zoom[1]*zoom[2], draw_number=False)
+                        img_data.tunnel.append(current_tunnel)
+                        count = count + 1
 
             if k == 27:
                 break

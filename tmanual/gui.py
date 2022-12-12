@@ -148,8 +148,7 @@ def gui():
                 print("input dir: "+str(in_dir))
                 print("input files: "+str(in_files))
                 print("output dir: "+out_dir)
-                message = measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object_size, font_size)
-                sg.popup(message)
+                measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object_size, font_size)
     
             elif event == 'post_analysis_start':
                 output_image = values["-OUTPUT_IMAGE-"]
