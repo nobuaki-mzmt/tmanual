@@ -17,89 +17,92 @@ def gui():
     sg.theme('Dark')
     frame_file = sg.Frame('Files', [
         [sg.Text("In   "),
-         sg.InputText('Input folder', enable_events=True, size=(30, 1)),
+         sg.InputText('Input folder', enable_events=True, size=(20, 1)),
          sg.FolderBrowse(button_text='select', size=(6, 1), key="-IN_FOLDER_NAME-"),
-         sg.InputText(' or files', enable_events=True, size=(25, 1)),
+         sg.InputText(' or files', enable_events=True, size=(20, 1)),
          sg.FilesBrowse(button_text='select', size=(6, 1), key="-IN_FILES_NAME-")
          ],
         [sg.Text("Out"),
-         sg.InputText('Output folder', enable_events=True, size=(30, 1)),
+         sg.InputText('Output folder', enable_events=True, size=(20, 1)),
          sg.FolderBrowse(button_text='select', size=(6, 1), key="-OUT_FOLDER_NAME-"),
          sg.Text("(* will be created if not specified)")
          ],
         [sg.Text("File extension (default = jpg)"),
          sg.In(key='-FILE_EXTENSION-', size=(15, 1))]
-    ], size=(1000, 160))
+    ], size=(800, 150))
 
-    frame_measure_param = sg.Frame('Measurement parameters', [
-        [sg.Text("Skip analyzed files"),
+    frame_param = sg.Frame('Parameters', [
+        [sg.Text("Measurement:", size=(12,1)),
+         sg.Text("skip analyzed files", size=(15,1)),
          sg.Combo(['true', 'false'], default_value="true", size=(6, 1), key="-SKIP_ANALYZED-")
-        ]
-    ], size=(1000, 60))
-    
-    frame_post_param = sg.Frame('Post-analysiss parameters', [
-        [sg.Text("length of the scale object (in mm)"),
-         sg.In(key='-SCALE_OBJECT-', size=(8, 1)),
-         sg.Text("output image (post)"),
-         sg.Combo(['true', 'false'], default_value="true", size=(6, 1), key="-OUTPUT_IMAGE-")
-         ],
-         [sg.Text("Contact threshold (default = 10 pixel) *1"),
-          sg.In(key='-CONTACT_THRESHOLD-', size=(8, 1))
-         ]
-    ], size=(1000, 100))
+        ],
+        [sg.Text("Post-analysis:", size=(12,1)), 
+         sg.Text("scale object length (mm)", size=(15,1)),
+         sg.In(key='-SCALE_OBJECT-', size=(6, 1)),
+         sg.Text("output image", size=(12,1)),
+         sg.Combo(['true', 'false'], default_value="true", size=(6, 1), key="-OUTPUT_IMAGE-")],
+        [sg.Text("", size=(12,1)),
+         sg.Text("contact thld (def 10 px)"),
+          sg.In(key='-CONTACT_THRESHOLD-', size=(6, 1))
+        ],
+        [sg.Text("Drawing:", size=(12,1)),
+         sg.Text("line width (def 5)"),
+         sg.In(key='-LINE_WIDTH-', size=(6, 1)),
 
-    frame_draw_param = sg.Frame('Drawing parameters', [
-        [sg.Text("Line width (default = 5)"),
-         sg.In(key='-LINE_WIDTH-', size=(8, 1)),
+         sg.Text("font size (def 2)"),
+         sg.In(key='-FONT_SIZE-', size=(6, 1)),
 
-         sg.Text("Font size (default = 2)"),
-         sg.In(key='-FONT_SIZE-', size=(8, 1)),
-
-         sg.Text("Text drawing"),
+         sg.Text("num draw"),
          sg.Combo(['true', 'false'], default_value="true", size=(6, 1), key="-TEXT_DRAWNING-")
         ]
-    ], size=(1000, 60))
-            
+    ], size=(800, 160))
 
-
-    frame_measure_buttom = sg.Frame('Measurement', [
+    frame_measure_buttom = sg.Frame('', [
         [sg.Submit(button_text='Measurement start', size=(20, 3), key='measurement_start')]], size=(180, 100))
     
-    frame_post_buttom = sg.Frame('Post-analysis', [
+    frame_post_buttom = sg.Frame('', [
         [sg.Submit(button_text='Post-analysis start', size=(20, 3), key='post_analysis_start',
                    button_color=('white', 'chocolate'))]], size=(180, 100))
 
-    frame_edit_buttom = sg.Frame('Edit nodes', [
+    frame_edit_buttom = sg.Frame('', [
         [sg.Submit(button_text='Edit nodes', size=(20, 3), key='edit_nodes_start',
                    button_color=('white', 'gray'))]], size=(180, 100))
     
     frame3 = sg.Frame('Manual', [
-        [sg.Text("Files should be consecutive image files, named 'id_number.jpg'\n"
-                 "    e.g., TunnelA_00.jpg, TunnelA_01.jpg, TunnelA_02.jpg, ..., "
-                 "TunnelA_20.jpg, TunnelB_00.jpg, TunnelB_01.jpg, ...")],
-        [sg.Text("The program reads all image files in input sequentially to ask the following (* LC: left click, RC: right click):")],
-        [sg.Text("1. Show the image\n"
-                 "   LC (or V):analyze  RC (or N):skip  Esc:exit (saved)\n"
-                 "   B:previous image  R:re-analyze (append to previous)  A:re-analyze (from the scratch)")],
-        [sg.Text("2. Set (0,0) coordinate\n"
-                 "   LC the same landscape point across images (used for calibration). RC to skip")],
-        [sg.Text("3. Measure tunnel length\n"
-                 "   LC to measure tunnel length.  RC to next or finish at the end.\n"
-                 "   Q:undo   Z:zoom in (x2-x8)  X:stop zoom  E:go-to-end  Esc:finish\n"
-                 "   * Branching tunnels should start in contact with the line of previous tunnels")],
-        [sg.Text("4. Identify nodes\n"
-                 "   LC:node  RC:finish  Q:undo  Z:zoom in (x2)  X:stop zoom\n"
-                 "   * Place nodes on the tunnel lines")],
-        [sg.Text("5. Set scale\n"
-                 "   Drag to set the scale. RC to finish.")],
-        [sg.Text("Post-analysis\n"
-                 "   Read res.pickle from output folder and Identify primary, secondary, tertiary, ..., tunnels and summarize analysis results")],
-        [sg.Text("*1: under this threhold, node and galleries are considered as contact. need to be smaller values for small galleries in large image")]
-        ], size=(1200, 600))
+        [sg.Text("Images should be named in 'id_number.jpg'\n"
+                 "    e.g., TunnelA_00.jpg, TunnelA_01.jpg, ..., TunnelA_20.jpg, TunnelB_00.jpg, TunnelB_01.jpg, ...")],
+        [sg.Text("Measurement", size=(12,1)),
+         sg.Text("sequentially process images with below process (LC: left click, RC: right click)")],
+        [sg.Text("", size=(1,3)),
+         sg.Text("1. Analyze", size=(10,3)),
+         sg.Text("-LC(or V):analyze  -RC(or N):skip \n"
+                 "-Esc:exit (saved)  -B:previous image\n"
+                 "-R:re-analyze (append to previous)  -A:re-analyze (from the scratch)")],
+        [sg.Text("", size=(1,2)),
+         sg.Text("2. Ref point", size=(10,2)),
+         sg.Text("-LC:the same landscape point across images (used for calibration).\n"
+                 "-RC:skip")],
+        [sg.Text("", size=(1,3)),
+         sg.Text("3. Length", size=(10,3)),
+         sg.Text("-LC:measure tunnel length.  -RC to next or finish at the end.\n"
+                 "-Q:undo   -Z:zoom in (x2-x8)  -X:stop zoom  -E:go-to-end  -Esc:finish\n"
+                 " Branching tunnels should be on the previous tunnels line")],
+        [sg.Text("", size=(1,2)),
+         sg.Text("4. Nodes", size=(10,2)),
+         sg.Text("-LC:node  -RC:finish  -Q:undo  -Z:zoom in (x2-x8)  -X:stop zoom\n"
+                 " Nodes should be on the tunnel lines")],
+        [sg.Text("", size=(1,1)),
+         sg.Text("5. Set scale", size=(10,1)),
+         sg.Text("-Drag to set the scale  -RC to finish.")],
+        [sg.Text("Post-analysis", size=(12,1)),
+         sg.Text("use smaller node-gallery contact threshold for small galleries relative to image")],
+        [sg.Text("Edit nodes", size=(12,1)),
+         sg.Text("-LC:edit node positions.  -R:remove nodes")]
+        ], size=(1000, 500))
     
     frame_buttons = sg.Column([[frame_measure_buttom], [frame_post_buttom], [frame_edit_buttom]])
-    frame_param = sg.Column([[frame_file],[frame_measure_param],[frame_post_param],[frame_draw_param]])
-    layout = [[frame_param, frame_buttons], [frame3]]
+    frame_input = sg.Column([[frame_file],[frame_param]])
+    layout = [[frame_input, frame_buttons], [frame3]]
     
     window = sg.Window('TManual, a tool to assist in measuring length development of structures',
                        layout, resizable=True)
