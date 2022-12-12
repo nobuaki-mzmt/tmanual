@@ -30,7 +30,7 @@ def zoom_func(img_z, mouse_xy, img_shape, zoom):
     return img_zoom, zoom_xy, zoom*2
 
 
-def output_measurement(img_data, img, tmanual_output, out_dir, object_size, font_size):
+def output_measurement(img_data, img, tmanual_output, out_dir, object_size, font_size, text_drawing):
     img_data.analyze_done()
 
     # delete old data
@@ -46,7 +46,7 @@ def output_measurement(img_data, img, tmanual_output, out_dir, object_size, font
     tmanual_output[0].append(img_data.id)
     tmanual_output[1].append(img_data.serial)
     tmanual_output[2].append(img_data.output_image_data())
-    img_data.image_output(img, out_dir, object_size, font_size)
+    img_data.image_output(img, out_dir, object_size, font_size, text_drawing)
 
     # write
     with open(out_dir + '/res.pickle', mode='wb') as f:
@@ -55,7 +55,7 @@ def output_measurement(img_data, img, tmanual_output, out_dir, object_size, font
     return tmanual_output
 
 
-def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object_size, font_size):
+def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object_size, font_size, text_drawing):
     # Data read
     if os.path.exists(out_dir + "/res.pickle"):
         print("existing analysis loaded")
@@ -152,7 +152,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
         if k == ord("n"):
             print("do not analyze. next")
             if img_data.analyze_flag == 0:
-                output_measurement(img_data, img_read.copy(), tmanual_output, out_dir, object_size, font_size)
+                output_measurement(img_data, img_read.copy(), tmanual_output, out_dir, object_size, font_size, text_drawing)
             ii = ii + 1
             continue
         if k == ord("r"):
@@ -358,7 +358,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
         # endregion
 
         # region----- 3. Output -----#
-        tmanual_output = output_measurement(img_data, img_read.copy(), tmanual_output, out_dir, object_size, font_size)
+        tmanual_output = output_measurement(img_data, img_read.copy(), tmanual_output, out_dir, object_size, font_size, text_drawing)
         ii = ii + 1
         # endregion
 

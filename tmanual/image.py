@@ -110,16 +110,22 @@ class ImgData:
             tunnel_len.append(tl/scale*scale_object_length)
         return tunnel_len
 
-    def image_output(self, img, out_dir, object_size, font_size):
-        img = object_drawing(img, self.ref_xy, self.scale_xy, self.tunnel, self.node, 0, vcol[4], object_size, font_size, draw_number=True)
+    def image_output(self, img, out_dir, object_size, font_size, text_drawing):
         cv2.putText(img, self.id+"_"+str(self.serial), note_pos,
                     cv2.FONT_HERSHEY_SIMPLEX, font_size, (255, 0, 0), font_size, cv2.LINE_AA)
         if len(self.tunnel) < 1:
             cv2.putText(img, "no tunnel", note_pos2,
                         cv2.FONT_HERSHEY_SIMPLEX, font_size, (255, 0, 0), font_size, cv2.LINE_AA)
-        cv2.imwrite(out_dir+"/" + self.name, img)
+        if text_drawing:
+            img = object_drawing(img, self.ref_xy, self.scale_xy, self.tunnel, self.node, 0, vcol[4], object_size, font_size, draw_number=text_drawing)
+            cv2.imwrite(out_dir+"/" + self.name, img)
+        else:
+            img = object_drawing(img, self.ref_xy, self.scale_xy, self.tunnel, self.node, 0, vcol[4], object_size, font_size, draw_number=text_drawing)
+            cv2.imwrite(out_dir+"/wotext_" + self.name, img)
+            img = object_drawing(img, self.ref_xy, self.scale_xy, self.tunnel, self.node, 0, vcol[4], object_size, font_size, draw_number=True)
+            cv2.imwrite(out_dir+"/" + self.name, img)
 
-    def colored_image_output(self, img, assigned_nodes, tunnel_sequence, out_dir, object_size, font_size):
+    def colored_image_output(self, img, tunnel_sequence, out_dir, object_size, font_size, text_drawing):
         cv2.putText(img, self.id+"_"+str(self.serial), note_pos,
                     cv2.FONT_HERSHEY_SIMPLEX, font_size, (255, 0, 0), font_size, cv2.LINE_AA)
         if len(self.tunnel) < 1:
@@ -128,10 +134,10 @@ class ImgData:
         for tt in range(len(self.tunnel)):
                 img = tunnel_draw(img, self.tunnel[tt], vcol[5-tunnel_sequence[tt]], object_size)
         for nn in range(len(self.node)):
-            if assigned_nodes[nn] == 1:
-                cv2.circle(img, self.node[nn], object_size, vcol[0], -1)
-            else:
-                cv2.circle(img, self.node[nn], object_size, vcol[0], 2)
+            cv2.circle(img, self.node[nn], object_size, vcol[0], -1)
+        if not text_drawing:
+            cv2.imwrite(out_dir+"colored_wotext_"+self.name, img)
+
         for tt in range(len(self.tunnel)):
             img = outlined_text(img, str(tt), self.tunnel[tt][0]-np.array([object_size, 0]), vcol[5-tunnel_sequence[tt]], font_size)
         for nn in range(len(self.node)):
