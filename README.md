@@ -1,7 +1,7 @@
 # TManual: assisting in manual measurements of length development
 ![time development of termite foraging tunnels](images/development_eg.png)
 
-This program is still beta-version. Will be released soon.
+This program is still beta-version. Will be released soon.    
 **TManual** is a python program that assists in manual measurements of length development (preprint will be available soon [Mizumoto 2022](https://doi.org/XXXXXXXXXX)). It can be used to measure the length of objects from sequential images, such as snapshots, time-laps, and video clips. It is designed especially for gallery structures built by animals but can be applied to any other objects. 
 
 ## How TManual works?
@@ -39,15 +39,15 @@ Please see the detail for the preprint [(Mizumoto 2022)](https://doi.org/XXXXXXX
 ![snapshot of the gui](images/gui.PNG)
 * Measurement
 In measurement program, TManual shows all images sequentially and gets user input to create res.picke. Measurement consists of the following process:
-1. Analyze
+1. Analyze  
 Users decide the action for the desplayed image
-2. Ref point
+2. Ref point  
 Indicate the reference point. The reference point is an identifiable landmark across all images (e.g., the corner of the experimental arena). This is useful when the relative position of the camera and object is not fixed (e.g., when users take photos every 24 hours and need to bring the experimental arena under the camera when filming). If the camera and object are fixed, users can skip the process (The Ref point will be a left-above corner of the image).
-3. Length
+3. Length  
 Users draw the galleries as freeform line objects with straight segments. Branching galleries should be contact with previous galleries.
-4. Node
+4. Node  
 Users indicate all branching and merging nodes in the gallery system. The nodes need to be on the gallery line drawn in the above process (< threshold indicated in post-analysis process).
-5. Scale
+5. Scale  
 Measure the length of the scale object. This is used to convert the unit from pixel to mm during the post-analysis.
 
 * Post-analysis
