@@ -17,7 +17,7 @@ import pyautogui as pag
 from tmanual.image import tunnel_draw, outlined_text, object_drawing, image_format, ImgData
 vcol = [[37, 231, 253], [98, 201, 94], [140, 145, 33],  [139, 82, 59], [84, 1, 68]]  # viridis colors in BGR
 
-def zoom_func(img_z, mouse_xy, img_shape):
+def zoom_func(img_z, mouse_xy, img_shape, zoom):
     mouse_xy[0] = max(mouse_xy[0], img_shape[0] / 4)
     mouse_xy[1] = max(mouse_xy[1], img_shape[1] / 4)
     mouse_xy[0] = min(mouse_xy[0], img_shape[0] * 3 / 4)
@@ -27,7 +27,7 @@ def zoom_func(img_z, mouse_xy, img_shape):
                int(mouse_xy[0] * 2 - img_shape[0] / 2):int(mouse_xy[0] * 2 + img_shape[0] / 2)]
     zoom_xy = mouse_xy * 2 - img_shape / 2
     zoom_xy = zoom_xy.astype(int)
-    return img_zoom, zoom_xy, 2
+    return img_zoom, zoom_xy, zoom*2
 
 
 def output_measurement(img_data, img, tmanual_output, out_dir, object_size, font_size):
@@ -201,7 +201,10 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
         img_undo = img.copy()
         tunnel_pre = img_data.tunnel
         img_data.tunnel = []
-        count, end, zoom, zoom_xy, mouse_xy, node_xy = 0, 0, 1, np.array([0, 0]), np.array([0, 0]), np.array([0, 0])
+
+        # todo: code for zooming is not great. but I have no idea how to improve yet. 
+        count, end, mouse_xy, node_xy = 0, 0, np.array([0, 0]), np.array([0, 0])
+        zoom, zoom_xy = [1, 1, 1], [np.array([0, 0]), np.array([0, 0]), np.array([0, 0])]  # for x2, x4, x8
 
         while True:
             cv2.imshow('window', img)
@@ -212,19 +215,20 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
             def tunnel_length(event, x, y, flags, param):
                 nonlocal img, current_tunnel, end, mouse_xy, zoom, zoom_xy
 
-                img = tunnel_draw(img, current_tunnel * zoom - zoom_xy, vcol[1], object_size*zoom)
+                img = tunnel_draw(img, ((current_tunnel*zoom[0]-zoom_xy[0])*zoom[1]-zoom_xy[1])*zoom[2]-zoom_xy[2],
+                 vcol[1], object_size*zoom[0]*zoom[1]*zoom[2])
 
                 if event == cv2.EVENT_MOUSEMOVE:
                     mouse_xy = np.array([x, y])
 
                 if event == cv2.EVENT_LBUTTONDOWN:
-                    current_tunnel = np.append(current_tunnel, (np.array([[x, y]]) + zoom_xy) / zoom, axis=0)
+                    current_tunnel = np.append(current_tunnel, (((np.array([[x, y]])+zoom_xy[2])/zoom[2]+zoom_xy[1])/zoom[1]+zoom_xy[0])/zoom[0], axis=0)
                     current_tunnel = current_tunnel.astype(int)
 
                 if event == cv2.EVENT_RBUTTONDOWN:
                     if len(current_tunnel) > 0:
-                        img = object_drawing(img, None, None, [current_tunnel * zoom - zoom_xy],
-                                             None, count, vcol[4], object_size*zoom, font_size*zoom, draw_number=False)
+                        img = object_drawing(img, None, None, [((current_tunnel*zoom[0]-zoom_xy[0])*zoom[1]-zoom_xy[1])*zoom[2]-zoom_xy[2]],
+                                             None, count, vcol[4], object_size*zoom[0]*zoom[1]*zoom[2], font_size*zoom[0]*zoom[1]*zoom[2], draw_number=False)
                         press('p')
                     else:
                         press('e')
@@ -239,8 +243,13 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
             elif k == ord("e"):
                 break
             elif k == ord("z"):
-                if zoom == 1:
-                    img, zoom_xy, zoom = zoom_func(img, mouse_xy, img_shape)
+                if zoom[1] == 2 and zoom[2] == 1:
+                    img, zoom_xy[2], zoom[2] = zoom_func(img, mouse_xy, img_shape, zoom[2])
+                elif zoom[0] == 2 and zoom[1] == 1:
+                    img, zoom_xy[1], zoom[1] = zoom_func(img, mouse_xy, img_shape, zoom[1])
+                elif zoom[0] == 1:
+                    img, zoom_xy[0], zoom[0] = zoom_func(img, mouse_xy, img_shape, zoom[0])
+                
             elif k == ord("q"):
                 if count > 0:
                     img_data.tunnel.pop(-1)
@@ -251,23 +260,19 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
                 img = img_undo.copy()
                 img = object_drawing(img, img_data.ref_xy, None, img_data.tunnel[0:count], None,
                                      0, vcol[4], object_size, font_size, draw_number=False)
-                zoom, zoom_xy = 1, np.array([0, 0])
+                zoom, zoom_xy = [1, 1, 1], [np.array([0, 0]), np.array([0, 0]), np.array([0, 0])]
 
             if k == 27:
-                if num_old_tunnel > 0 and count < num_old_tunnel:
-                    for i_count in range(count, num_old_tunnel):
-                        current_tunnel = copy.copy(tunnel_pre[i_count])
-                        img = object_drawing(img, None, None, [current_tunnel * zoom - zoom_xy],
-                                            None, i_count, vcol[4], object_size*zoom, font_size*zoom, draw_number=False)
-                        img_data.tunnel.append(current_tunnel)
                 break
+        if k == 27:
+            break
 
         # endregion
 
         # region --- 2-3.  Identify branch --- #
         img = img_data.note_plot(img_read.copy(), '4.Nodes  ', font_size)
         img = img_data.object_plot(img, 0, vcol[4], object_size, font_size, draw_number=False)
-        zoom = 1
+        zoom, zoom_xy = [1, 1, 1], [np.array([0, 0]), np.array([0, 0]), np.array([0, 0])]  # for x2, x4, x8
         count, count_0 = len(img_data.node), len(img_data.node)
         img_undo = img.copy()
 
@@ -279,7 +284,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
                 if event == cv2.EVENT_MOUSEMOVE:
                     mouse_xy = np.array([x, y])
                 if event == cv2.EVENT_LBUTTONDOWN:
-                    node_xy = (np.array([x, y]) + zoom_xy) / zoom
+                    node_xy = (((np.array([x, y])+zoom_xy[2])/zoom[2]+zoom_xy[1])/zoom[1]+zoom_xy[0])/zoom[0]
                     node_xy = node_xy.astype(int)
                     press('p')
                 elif event == cv2.EVENT_RBUTTONDOWN:
@@ -289,8 +294,8 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
             k = cv2.waitKey(0)
             if k == ord("p"):
                 img_data.node.append(node_xy)
-                img = object_drawing(img, node_d=[node_xy*zoom-zoom_xy], offset=count, object_size=object_size, font_size=font_size, draw_number=False)
-
+                img = object_drawing(img, node_d=[((node_xy*zoom[0]-zoom_xy[0])*zoom[1]-zoom_xy[1])*zoom[2]-zoom_xy[2]], 
+                    offset=count, object_size=object_size, font_size=font_size, draw_number=False)
                 count = count + 1
             if k == ord("n"):
                 break
@@ -299,12 +304,16 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
                     img_data.node.pop(-1)
                     count = count - 1
             elif k == ord("z"):
-                if zoom == 1:
-                    img, zoom_xy, zoom = zoom_func(img, mouse_xy, img_shape)
+                if zoom[1] == 2 and zoom[2] == 1:
+                    img, zoom_xy[2], zoom[2] = zoom_func(img, mouse_xy, img_shape, zoom[2])
+                elif zoom[0] == 2 and zoom[1] == 1:
+                    img, zoom_xy[1], zoom[1] = zoom_func(img, mouse_xy, img_shape, zoom[1])
+                elif zoom[0] == 1:
+                    img, zoom_xy[0], zoom[0] = zoom_func(img, mouse_xy, img_shape, zoom[0])
             if k == ord("x") or k == ord("q"):
                 img = img_undo.copy()
                 img = object_drawing(img, None, None, None, img_data.node[0:count], 0, vcol[4], object_size, font_size, draw_number=False)
-                zoom = 1
+                zoom, zoom_xy = [1, 1, 1], [np.array([0, 0]), np.array([0, 0]), np.array([0, 0])]  # for x2, x4, x8
         # endregion
 
         # region --- 2-4.  Scaling --- #
@@ -344,5 +353,4 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
         # endregion
 
     cv2.destroyAllWindows()
-
-    return "Finished. Next to Post-analysis."
+    print("Finished. Next to Post-analysis.")

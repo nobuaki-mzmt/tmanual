@@ -21,7 +21,7 @@ As all requirements will be installed together, I recommend using a virtual envi
 Then run the following in python.
 ```python
 import tmanual
-tmanaul.gui()
+tmanual.gui()
 ```
 
 ### 2. EXE file

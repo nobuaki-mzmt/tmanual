@@ -64,7 +64,8 @@ def gui():
         [sg.Text("The program reads all image files in input sequentially to ask the following;\n"
                  "(* LC: left click, RC: right click)")],
         [sg.Text("1. Show the image\n"
-                 "   LC (or V):analyze  RC (or N):skip  Esc:exit (saved)  B:previous image  R:analyze from the scratch")],
+                 "   LC (or V):analyze  RC (or N):skip  Esc:exit (saved)\n  "
+                 "   B:previous image  R:re-analyze (append to previous)  A:re-analyze (from the scratch)")],
         [sg.Text("2. Set (0,0) coordinate\n"
                  "   LC the same landscape point across images (used for calibration). RC to skip")],
         [sg.Text("3. Measure tunnel length\n"
