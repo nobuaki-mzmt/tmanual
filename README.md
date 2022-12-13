@@ -45,9 +45,7 @@ Users decide the action for the desplayed image
 Indicate the reference point. The reference point is an identifiable landmark across all images (e.g., the corner of the experimental arena). This is useful when the relative position of the camera and object is not fixed (e.g., when users take photos every 24 hours and need to bring the experimental arena under the camera when filming). If the camera and object are fixed, users can skip the process (The Ref point will be a left-above corner of the image).
 3. Length  
 Users draw the galleries as freeform line objects with straight segments. Branching galleries should be contact with previous galleries.
-4. Node  
-Users indicate all branching and merging nodes in the gallery system. The nodes need to be on the gallery line drawn in the above process (< threshold indicated in post-analysis process).
-5. Scale  
+4. Scale  
 Measure the length of the scale object. This is used to convert the unit from pixel to mm during the post-analysis.
 
 * Post-analysis
