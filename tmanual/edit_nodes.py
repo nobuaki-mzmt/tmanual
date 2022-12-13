@@ -162,6 +162,7 @@ def edit_nodes(in_dir, in_files, out_dir, file_extension, object_size, font_size
         tmanual_output = output_measurement(img_data, img_read.copy(), tmanual_output, out_dir, object_size, font_size, text_drawing)
 
         # correct all subsequent images in the same experimental setup
+        ref_preb = img_data.ref_xy
         cur_name = copy.copy(img_data.name)
         subsequent_data_index = list(set([i for i, x in enumerate(tmanual_output[1]) if x > img_data.serial]) & set(
             [i for i, x in enumerate(tmanual_output[0]) if x == img_data.id]))
@@ -178,7 +179,7 @@ def edit_nodes(in_dir, in_files, out_dir, file_extension, object_size, font_size
                 img_data.analyze_flag = subsequent_data[7]
 
                 if len(node_xy) > 0:
-                    img_data.node[count] = node_xy
+                    img_data.node[count] = node_xy - ref_preb + img_data.ref_xy
                 else:
                     img_data.node.pop(count)
                 img_read = cv2.imread(i.replace(cur_name, img_data.name))
