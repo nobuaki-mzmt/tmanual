@@ -37,13 +37,15 @@ def gui():
          sg.Combo(['true', 'false'], default_value="true", size=(6, 1), key="-SKIP_ANALYZED-")
         ],
         [sg.Text("Post-analysis:", size=(12,1)), 
-         sg.Text("scale object length (mm)", size=(15,1)),
+         sg.Text("scale length (mm)", size=(15,1)),
          sg.In(key='-SCALE_OBJECT-', size=(6, 1)),
          sg.Text("output image", size=(12,1)),
          sg.Combo(['true', 'false'], default_value="true", size=(6, 1), key="-OUTPUT_IMAGE-")],
         [sg.Text("", size=(12,1)),
          sg.Text("contact thld (def 10 px)"),
-          sg.In(key='-CONTACT_THRESHOLD-', size=(6, 1))
+          sg.In(key='-CONTACT_THRESHOLD-', size=(6, 1)),
+         sg.Text("network produce", size=(12,1)),
+         sg.Combo(['true', 'false'], default_value="true", size=(6, 1), key="-NETWORK-")
         ],
         [sg.Text("Drawing:", size=(12,1)),
          sg.Text("line width (def 5)"),
@@ -87,12 +89,8 @@ def gui():
          sg.Text("-LC:measure tunnel length.  -RC to next or finish at the end.\n"
                  "-Q:undo   -Z:zoom in (x2-x8)  -X:stop zoom  -E:go-to-end  -Esc:finish\n"
                  " Branching tunnels should be on the previous tunnels line")],
-        [sg.Text("", size=(1,2)),
-         sg.Text("4. Nodes", size=(10,2)),
-         sg.Text("-LC:node  -RC:finish  -Q:undo  -Z:zoom in (x2-x8)  -X:stop zoom\n"
-                 " Nodes should be on the tunnel lines")],
         [sg.Text("", size=(1,1)),
-         sg.Text("5. Set scale", size=(10,1)),
+         sg.Text("4. Set scale", size=(10,1)),
          sg.Text("-Drag to set the scale  -RC to finish.")],
         [sg.Text("Post-analysis", size=(12,1)),
          sg.Text("use smaller node-gallery contact threshold for small galleries relative to image")],
@@ -219,10 +217,16 @@ def gui():
                 if len(values["-CONTACT_THRESHOLD-"]) == 0:
                     contact_threshold = 10
                 else:
-                    contact_threshold = int(values["-CONTACT_THRESHOLD-"])                
+                    contact_threshold = int(values["-CONTACT_THRESHOLD-"])
+
+                network = values["-NETWORK-"]
+                if network == "true":
+                    network = True
+                else:
+                    network = False
                 
                 
-                message = postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, output_image, object_size, font_size, text_drawing)
+                message = postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network, output_image, object_size, font_size, text_drawing)
                 sg.popup(message)
 
             elif event == 'edit_nodes_start':
