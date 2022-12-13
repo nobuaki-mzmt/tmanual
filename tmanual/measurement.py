@@ -51,7 +51,6 @@ def output_measurement(img_data, img, tmanual_output, out_dir, object_size, font
     # write
     with open(out_dir + '/res.pickle', mode='wb') as f:
         pickle.dump(tmanual_output, f)
-
     return tmanual_output
 
 
@@ -68,7 +67,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
             for ii in range(len(tmanual_output[0])):
                 tmanual_output[2][0].pop(5)
             with open(out_dir + '/res.pickle', mode='wb') as f:
-            pickle.dump(tmanual_output, f)
+                pickle.dump(tmanual_output, f)
         # ----------
 
     else:

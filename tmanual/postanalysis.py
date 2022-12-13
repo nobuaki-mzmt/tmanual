@@ -52,7 +52,7 @@ def postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network_o
                 for ii in range(len(tmanual_output[0])):
                     tmanual_output[2][0].pop(5)
                 with open(out_dir + '/res.pickle', mode='wb') as f:
-                pickle.dump(tmanual_output, f)
+                    pickle.dump(tmanual_output, f)
             # ----------
 
     else:
@@ -90,6 +90,8 @@ def postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network_o
                 nearest_point = np.array([0,0])
                 for tt_t in range(len_t):
                     if tt_n != tt_t:
+                        if norm(node[0][tt_n]-node[0][tt_t]) < contact_threshold:
+                            continue
                         ll = len(tunnel[tt_t])
                         for ttt in range(ll - 1):
                             tunnel_segment = tunnel[tt_t][ttt:(ttt + 2)]
@@ -129,7 +131,9 @@ def postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network_o
                     if contact_tunnelID[0][tt] in check_tunnel:
                         tunnel_sequence[tt] = tunnel_seq_count + 1
                 tunnel_seq_count = tunnel_seq_count + 1
-                if min(tunnel_sequence) > 0:
+                if len(check_tunnel) == 0:
+                    if min(tunnel_sequence) < 0:
+                        return "Error in " + img_data.name + ": cannot get tunnel id. As this error is unexpected. please contact author" 
                     break
 
             # 4. get network structure
