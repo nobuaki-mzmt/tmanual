@@ -108,7 +108,7 @@ class ImgData:
             for ttt in range(len(self.tunnel[tt])-1):
                 tl = tl+math.sqrt(sum((self.tunnel[tt][ttt+1]-self.tunnel[tt][ttt])**2))
             tunnel_len.append(tl/scale*scale_object_length)
-        return tunnel_len
+        return tunnel_len, scale
 
     def image_output(self, img, out_dir, object_size, font_size, text_drawing):
         cv2.putText(img, self.id+"_"+str(self.serial), note_pos,

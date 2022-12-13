@@ -113,7 +113,7 @@ def edit_nodes(in_dir, in_files, out_dir, file_extension, object_size, font_size
         mouse_xy, node_xy = np.array([0, 0]), np.array([0, 0])
 
         while count < len(img_data.node):
-            cv2.circle(img, ((img_data.node[count]*zoom[0]-zoom_xy[0])*zoom[1]-zoom_xy[1])*zoom[2]-zoom_xy[2], object_size*zoom[0]*zoom[1]*zoom[2], vcol[1], -1)
+            cv2.circle(img, ((img_data.node[count]*zoom[0]-zoom_xy[0])*zoom[1]-zoom_xy[1])*zoom[2]-zoom_xy[2], object_size*zoom[0]*zoom[1]*zoom[2]*2, vcol[1], -1)
             cv2.imshow('window', img)
 
             def node_identify(event, x, y, flags, param):
@@ -133,10 +133,13 @@ def edit_nodes(in_dir, in_files, out_dir, file_extension, object_size, font_size
                 img_data.node[count] = node_xy
                 break
             elif k == ord("n"):
+                cv2.circle(img, ((img_data.node[count]*zoom[0]-zoom_xy[0])*zoom[1]-zoom_xy[1])*zoom[2]-zoom_xy[2], object_size*zoom[0]*zoom[1]*zoom[2]*2, vcol[0], -1)
                 count = count + 1
             elif k == ord("r"):
                 img_data.node.pop(count)
                 node_xy = []
+                break
+            elif k == 27:
                 break
             elif k == ord("q"):
                 if count > 0:
@@ -153,7 +156,8 @@ def edit_nodes(in_dir, in_files, out_dir, file_extension, object_size, font_size
                 img = object_drawing(img, None, None, None, img_data.node[0:count], 0, vcol[4], object_size, font_size, draw_number=False)
                 zoom, zoom_xy = [1, 1, 1], [np.array([0, 0]), np.array([0, 0]), np.array([0, 0])]  # for x2, x4, x8
         # endregion
-
+        if k == 27:
+            break
         # region----- 3. Output -----#
         tmanual_output = output_measurement(img_data, img_read.copy(), tmanual_output, out_dir, object_size, font_size, text_drawing)
 
