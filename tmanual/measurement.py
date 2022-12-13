@@ -65,7 +65,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
         # This part removes node object from old version tmanual res.picke
         if len(tmanual_output[2][0]) > 7:
             for ii in range(len(tmanual_output[0])):
-                tmanual_output[2][0].pop(5)
+                tmanual_output[2][ii].pop(5)
             with open(out_dir + '/res.pickle', mode='wb') as f:
                 pickle.dump(tmanual_output, f)
         # ----------
