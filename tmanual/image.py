@@ -9,7 +9,7 @@ import copy
 import numpy as np
 import math
 import re
-vcol = [[37, 231, 253], [98, 201, 94], [140, 145, 33],  [139, 82, 59], [84, 1, 68]]  # viridis colors in BGR
+v_col = [[37, 231, 253], [98, 201, 94], [140, 145, 33],  [139, 82, 59], [84, 1, 68]]  # viridis colors in BGR
 note_pos = [40, 100]
 note_pos2 = [40, 200]
 note_pos3 = [40, 300]
@@ -20,9 +20,9 @@ def tunnel_draw(img_t, current_tunnel_t, col_t, object_size, end_node_draw=True)
     if l_t > 0:
         for t_seg_iter in range(l_t-1):
             cv2.line(img_t, current_tunnel_t[t_seg_iter], current_tunnel_t[t_seg_iter+1], col_t, object_size)
-        cv2.circle(img_t, current_tunnel_t[0], object_size, vcol[0], -1)
+        cv2.circle(img_t, current_tunnel_t[0], object_size, v_col[0], -1)
         if l_t > 1 and end_node_draw:
-            cv2.circle(img_t, current_tunnel_t[l_t-1], object_size, vcol[0], round(object_size/2))
+            cv2.circle(img_t, current_tunnel_t[l_t-1], object_size, v_col[0], round(object_size/2))
     return img_t
 
 
@@ -35,7 +35,7 @@ def outlined_text(img_o, text_o, ref_o, col_o, font_size):
 def object_drawing(img_d, ref_d=None, scale_d=None, tunnel_d=None, offset=0,
                    col_t=None, object_size = 5, font_size = 2, draw_number = True, end_node_draw=True):
     if ref_d is not None:
-        cv2.circle(img_d, ref_d, object_size*5, vcol[0], 5)
+        cv2.circle(img_d, ref_d, object_size*5, v_col[0], 5)
         cv2.circle(img_d, ref_d, object_size, (0, 0, 0), -1)
     if col_t is None:
         col_t = [0, 0, 0]
@@ -45,7 +45,7 @@ def object_drawing(img_d, ref_d=None, scale_d=None, tunnel_d=None, offset=0,
         for tt in range(len(tunnel_d)):
             img_d = tunnel_draw(img_d, tunnel_d[tt], col_t, object_size, end_node_draw)
             if draw_number:
-                img_d = outlined_text(img_d, str(tt+offset), tunnel_d[tt][0]-np.array([object_size, 0]), vcol[0], font_size)
+                img_d = outlined_text(img_d, str(tt+offset), tunnel_d[tt][0]-np.array([object_size, 0]), v_col[0], font_size)
     return img_d
 
 
@@ -120,12 +120,12 @@ class ImgData:
             cv2.putText(img, "no tunnel", note_pos2,
                         cv2.FONT_HERSHEY_SIMPLEX, font_size, (255, 0, 0), font_size, cv2.LINE_AA)
         if text_drawing:
-            img = object_drawing(img, self.ref_xy, self.scale_xy, self.tunnel, 0, vcol[4], object_size, font_size, draw_number=text_drawing)
+            img = object_drawing(img, self.ref_xy, self.scale_xy, self.tunnel, 0, v_col[4], object_size, font_size, draw_number=text_drawing)
             cv2.imwrite(out_dir+"/" + self.name, img)
         else:
-            img = object_drawing(img, self.ref_xy, self.scale_xy, self.tunnel, 0, vcol[4], object_size, font_size, draw_number=text_drawing)
+            img = object_drawing(img, self.ref_xy, self.scale_xy, self.tunnel, 0, v_col[4], object_size, font_size, draw_number=text_drawing)
             cv2.imwrite(out_dir+"/wotext_" + self.name, img)
-            img = object_drawing(img, self.ref_xy, self.scale_xy, self.tunnel, 0, vcol[4], object_size, font_size, draw_number=True)
+            img = object_drawing(img, self.ref_xy, self.scale_xy, self.tunnel, 0, v_col[4], object_size, font_size, draw_number=True)
             cv2.imwrite(out_dir+"/" + self.name, img)
 
     def colored_image_output(self, img, tunnel_sequence, out_dir, object_size, font_size, text_drawing):
@@ -135,12 +135,12 @@ class ImgData:
             cv2.putText(img, "no tunnel", note_pos2,
                         cv2.FONT_HERSHEY_SIMPLEX, font_size, (0, 0, 255), font_size, cv2.LINE_AA)
         for tt in range(len(self.tunnel)):
-                img = tunnel_draw(img, self.tunnel[tt], vcol[5-tunnel_sequence[tt]], object_size)
+                img = tunnel_draw(img, self.tunnel[tt], v_col[5-tunnel_sequence[tt]], object_size)
         if not text_drawing:
             cv2.imwrite(out_dir+"colored_wotext_"+self.name, img)
 
         for tt in range(len(self.tunnel)):
-            img = outlined_text(img, str(tt), self.tunnel[tt][0]-np.array([object_size, 0]), vcol[5-tunnel_sequence[tt]], font_size)
+            img = outlined_text(img, str(tt), self.tunnel[tt][0]-np.array([object_size, 0]), v_col[5-tunnel_sequence[tt]], font_size)
         cv2.imwrite(out_dir+"colored_"+self.name, img)
 
     def analyze_done(self):

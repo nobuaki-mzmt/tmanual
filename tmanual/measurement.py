@@ -15,7 +15,8 @@ from keyboard import press
 import pyautogui as pag
 
 from tmanual.image import tunnel_draw, outlined_text, object_drawing, image_format, ImgData
-vcol = [[37, 231, 253], [98, 201, 94], [140, 145, 33],  [139, 82, 59], [84, 1, 68]]  # viridis colors in BGR
+v_col = [[37, 231, 253], [98, 201, 94], [140, 145, 33],  [139, 82, 59], [84, 1, 68]]  # viridis colors in BGR
+
 
 def zoom_func(img_z, mouse_xy, img_shape, zoom):
     mouse_xy[0] = max(mouse_xy[0], img_shape[0] / 4)
@@ -34,8 +35,10 @@ def output_measurement(img_data, img, tmanual_output, out_dir, object_size, font
     img_data.analyze_done()
 
     # delete old data
-    duplicate_data_index = list(set([i for i, x in enumerate(tmanual_output[1]) if x == img_data.serial]) & set(
-            [i for i, x in enumerate(tmanual_output[0]) if x == img_data.id]))
+    duplicate_data_index = list(
+        set([i for i, x in enumerate(tmanual_output[1]) if x == img_data.serial]) & 
+        set([i for i, x in enumerate(tmanual_output[0]) if x == img_data.id])
+    )
     if len(duplicate_data_index) > 0:
         print("delete duplicate data")
         tmanual_output[0].pop(duplicate_data_index[0])
@@ -62,7 +65,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
             tmanual_output = pickle.load(f)
 
         # --- todo this part will be removed future
-        # This part removes node object from old version tmanual res.picke
+        # remove node object from old version tmanual res.pickle
         if len(tmanual_output[2][0]) > 7:
             for ii in range(len(tmanual_output[0])):
                 tmanual_output[2][ii].pop(5)
@@ -83,17 +86,22 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
     # Analysis
     ii = 0
     while ii < num_file:
-        # region ----- 0. load image (or skip) -----#
-        # meta data
+
+        # region --- Load image (or skip) ---#
+        print(str(ii) + ": " + img_data.name)
         i = name1[ii]
         img_data = ImgData(i)
-        print(str(ii) + ": " + img_data.name)
 
         cur_data, pre_data = [], []
-        cur_data_index = list(set([i for i, x in enumerate(tmanual_output[1]) if x == img_data.serial]) & set(
-            [i for i, x in enumerate(tmanual_output[0]) if x == img_data.id]))
-        pre_data_index = list(set([i for i, x in enumerate(tmanual_output[1]) if x == img_data.serial-1]) & set(
-            [i for i, x in enumerate(tmanual_output[0]) if x == img_data.id]))
+        cur_data_index = list(
+            set([i for i, x in enumerate(tmanual_output[1]) if x == img_data.serial]) &
+            set([i for i, x in enumerate(tmanual_output[0]) if x == img_data.id])
+        )
+        pre_data_index = list(
+            set([i for i, x in enumerate(tmanual_output[1]) if x == img_data.serial-1]) &
+            set([i for i, x in enumerate(tmanual_output[0]) if x == img_data.id])
+        )
+
         if len(cur_data_index) > 0:
             cur_data = copy.deepcopy(tmanual_output[2][cur_data_index[0]])
             img_data.name = cur_data[0]
@@ -112,33 +120,33 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
                 ii = ii + 1
                 continue
 
-        # endregion ------
-
         img_read = cv2.imread(i)
         img_read = image_format(img_read)
         img_shape = np.array([img_read.shape[1], img_read.shape[0]])
 
+        # create window
         window_name = "window"
-
-        # region ----- 1. Check if analyze the video -----#
-        img = img_data.note_plot(img_read.copy(), '1.Check ', font_size)
-
-        # if data of current image exist, draw object
-        if img_data.analyze_flag > 0:
-            img = img_data.object_plot(img, 0, vcol[4], object_size, font_size, draw_number=True)
-        # else if data of previous image exist, draw object
-        elif len(pre_data) > 0:
-            img_data.ref_xy = pre_data[3]
-            img_data.tunnel = pre_data[4]
-            img_data.scale_xy = pre_data[5]
-            img = img_data.object_plot(img, 0, vcol[4], object_size, font_size, draw_number=True)
-
         cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
         scr_w, scr_h = pag.size()
         if scr_h > scr_w * img_shape[1] / img_shape[0]:
             cv2.resizeWindow(window_name, scr_w, int(scr_w * img_shape[1] / img_shape[0]))
         else:
             cv2.resizeWindow(window_name, int(scr_h * img_shape[0] / img_shape[1]), scr_h)
+
+        # endregion ------
+
+        # region --- 1. Check if analyze the video ---#
+        img = img_data.note_plot(img_read.copy(), '1.Check ', font_size)
+
+        # if data of current image exist, draw object
+        if img_data.analyze_flag > 0:
+            img = img_data.object_plot(img, 0, v_col[4], object_size, font_size, draw_number=True)
+        # else if data of previous image exist, draw object
+        elif len(pre_data) > 0:
+            img_data.ref_xy = pre_data[3]
+            img_data.tunnel = pre_data[4]
+            img_data.scale_xy = pre_data[5]
+            img = img_data.object_plot(img, 0, v_col[4], object_size, font_size, draw_number=True)
 
         cv2.imshow(window_name, img)
 
@@ -163,7 +171,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
             ii = ii + 1
             continue
         if k == ord("r"):
-            # if reanalyze it, want to append to the data of previous image
+            # reanalyze, appending to the data of previous image
             if len(pre_data) > 0:
                 img_data.ref_xy = pre_data[3]
                 img_data.tunnel = pre_data[4]
@@ -171,16 +179,16 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
             else:
                 img_data.tunnel = []
         if k == ord("a"):
+            # reanalyze, from scratch
             img_data.tunnel = []
         if k == 27:
             cv2.destroyAllWindows()
             break
         # endregion ----------
 
-        # region----- 2. Analyze the image -----#
-        # region --- 2-1.  Define (0,0) --- #
+        # region --- 2.  Define Ref point --- #
         img = img_data.note_plot(img_read.copy(), '2.Ref point  ', font_size)
-        cv2.circle(img, img_data.ref_xy, object_size * 5, vcol[0], object_size)
+        cv2.circle(img, img_data.ref_xy, object_size * 5, v_col[0], object_size)
         cv2.circle(img, img_data.ref_xy, object_size, (0, 0, 0), -1)
 
         cv2.imshow('window', img)
@@ -198,19 +206,19 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
 
         # endregion
 
-        # region --- 2-2.  Measure tunnel length --- #
+        # region --- 3.  Measure tunnel length --- #
         img = img_data.note_plot(img_read.copy(), '3.Measure  ', font_size)
 
-        # draw previous tunnel
+        # draw previous tunnels
         num_old_tunnel = len(img_data.tunnel)
-        img = img_data.object_plot(img, 0, vcol[2], object_size, font_size, draw_number=False, end_node_draw=False)
+        img = img_data.object_plot(img, 0, v_col[2], object_size, font_size, draw_number=False, end_node_draw=False)
         img_undo = img.copy()
         tunnel_pre = img_data.tunnel
-        img_data.tunnel = []
 
-        # todo: code for zooming is not great. but I have no idea how to improve yet. 
+        # todo: code for zooming is not great. but I have no idea how to improve yet.
         count, end, mouse_xy = 0, 0, np.array([0, 0])
         zoom, zoom_xy = [1, 1, 1], [np.array([0, 0]), np.array([0, 0]), np.array([0, 0])]  # for x2, x4, x8
+        img_data.tunnel = []
 
         while True:
             cv2.imshow('window', img)
@@ -221,8 +229,9 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
             def tunnel_length(event, x, y, flags, param):
                 nonlocal img, current_tunnel, end, mouse_xy, zoom, zoom_xy
 
-                img = tunnel_draw(img, ((current_tunnel*zoom[0]-zoom_xy[0])*zoom[1]-zoom_xy[1])*zoom[2]-zoom_xy[2],
-                 vcol[1], object_size*zoom[0]*zoom[1]*zoom[2], False)
+                img = tunnel_draw(img,
+                                  ((current_tunnel*zoom[0]-zoom_xy[0])*zoom[1]-zoom_xy[1])*zoom[2]-zoom_xy[2],
+                                  v_col[1], object_size*zoom[0]*zoom[1]*zoom[2], False)
 
                 if event == cv2.EVENT_MOUSEMOVE:
                     mouse_xy = np.array([x, y])
@@ -234,7 +243,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
                 if event == cv2.EVENT_RBUTTONDOWN:
                     if len(current_tunnel) > 0:
                         img = object_drawing(img, None, None, [((current_tunnel*zoom[0]-zoom_xy[0])*zoom[1]-zoom_xy[1])*zoom[2]-zoom_xy[2]],
-                                             count, vcol[4], object_size*zoom[0]*zoom[1]*zoom[2], font_size*zoom[0]*zoom[1]*zoom[2], draw_number=False)
+                                             count, v_col[4], object_size*zoom[0]*zoom[1]*zoom[2], font_size*zoom[0]*zoom[1]*zoom[2], draw_number=False)
                         press('p')
                     else:
                         press('f')
@@ -265,7 +274,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
                 # cancel zoom when redo
                 img = img_undo.copy()
                 img = object_drawing(img, img_data.ref_xy, None, img_data.tunnel[0:count], 
-                                     0, vcol[4], object_size, font_size, draw_number=False)
+                                     0, v_col[4], object_size, font_size, draw_number=False)
                 zoom, zoom_xy = [1, 1, 1], [np.array([0, 0]), np.array([0, 0]), np.array([0, 0])]
 
             if k == ord("e"):
@@ -274,7 +283,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
                     for i_count in range(count_temp, num_old_tunnel):
                         current_tunnel = copy.copy(tunnel_pre[i_count])
                         img = object_drawing(img, None, None, [((current_tunnel*zoom[0]-zoom_xy[0])*zoom[1]-zoom_xy[1])*zoom[2]-zoom_xy[2]],
-                                             count, vcol[4], object_size*zoom[0]*zoom[1]*zoom[2], font_size*zoom[0]*zoom[1]*zoom[2], draw_number=False)
+                                             count, v_col[4], object_size*zoom[0]*zoom[1]*zoom[2], font_size*zoom[0]*zoom[1]*zoom[2], draw_number=False)
                         img_data.tunnel.append(current_tunnel)
                         count = count + 1
 
@@ -285,7 +294,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
 
         # endregion
 
-        # region --- 2-3.  Scaling --- #
+        # region --- 4.  Scaling --- #
         img = img_data.note_plot(img_read.copy(), '4.Scale  ', font_size)
         cv2.line(img, img_data.scale_xy[0], img_data.scale_xy[1], (0, 255, 0), object_size)
         end, drawing = 0, False
@@ -314,9 +323,8 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
             if cv2.waitKey(1) & end == 1:
                 break
         # endregion
-        # endregion
 
-        # region----- 3. Output -----#
+        # region----- Output -----#
         tmanual_output = output_measurement(img_data, img_read.copy(), tmanual_output, out_dir, object_size, font_size, text_drawing)
         ii = ii + 1
         # endregion
