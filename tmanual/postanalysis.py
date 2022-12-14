@@ -192,11 +192,6 @@ def postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network_o
                                 if dis_temp < 0.00001: # == 0 may be affected by float
                                     tunnel_seg_len = tunnel_seg_len + norm(nearest_point-tunnel_segment[0])
                                     break  
-
-                                # ---XXX todo: potentially same problem with func node_tunnel_distance
-                                #if np.dot(nearest_point-tunnel_segment[0], tunnel_segment[1]-tunnel_segment[0]) == 0:
-                                #    tunnel_seg_len = tunnel_seg_len + norm(nearest_point-tunnel_segment[0])
-                                #    break                                
                                 else:
                                     tunnel_seg_len = tunnel_seg_len + norm(tunnel_segment[1]-tunnel_segment[0])
                             list_tunnel_seg_len[nn] = tunnel_seg_len

@@ -88,9 +88,9 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
     while ii < num_file:
 
         # region --- Load image (or skip) ---#
-        print(str(ii) + ": " + img_data.name)
         i = name1[ii]
         img_data = ImgData(i)
+        print(str(ii) + ": " + img_data.name)
 
         cur_data, pre_data = [], []
         cur_data_index = list(
