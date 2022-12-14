@@ -42,8 +42,8 @@ Please see the detail for the preprint [(Mizumoto 2022)](https://doi.org/XXXXXXX
 <img src="images/gui.PNG" title="snapshot of the gui" width="600">
 </div>
 
-* Measurement
-Show all images sequentially and gets user input to create res.picke. Measurement consists of the following process:
+* **Measurement**  
+Show all images sequentially and gets user input to create res.picke. Measurement consists of the following process:  
 1. Check  
 Users decide the action for the desplayed image
 2. Ref point  
@@ -53,7 +53,7 @@ Users draw the galleries as freeform line objects with straight segments. Branch
 4. Scale  
 Measure the length of the scale object. This is used to convert the unit from pixel to mm during the post-analysis.
 
-* Post-analysis
+* **Post-analysis**  
 Create CVS files containing all of the information about the gallery structures based on res.pickle.  
 This includes the length of each gallery (and total length), the number of galleries, the number of nodes, gallery classification, and network structure of gallery system.
 
