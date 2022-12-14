@@ -159,13 +159,21 @@ def postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network_o
                         if tt_0 < tt_1:
                             # start node is the same?
                             if norm(node[0][tt_0] - node[0][tt_1]) < contact_threshold:
+                                print(node_name[0][tt_1], "->", node_name[0][tt_0] )
                                 node_name[0][tt_1] = copy.copy(node_name[0][tt_0])
-                            # end node is the same?
-                            if norm(node[1][tt_0] - node[1][tt_1]) < contact_threshold:
-                                node_name[1][tt_1] = copy.copy(node_name[1][tt_0])
                         # start-end node is the same?
                         if norm(node[0][tt_0] - node[1][tt_1]) < contact_threshold:
+                            print(node_name[1][tt_1], "->", node_name[0][tt_0] )
                             node_name[1][tt_1] = copy.copy(node_name[0][tt_0])
+                for tt_0 in range(len_t):
+                    for tt_1 in range(len_t):
+                        if tt_0 < tt_1:
+                            # end node is the same?
+                            if norm(node[1][tt_0] - node[1][tt_1]) < contact_threshold:
+                                print(node_name[1][tt_1], "->", node_name[1][tt_0] )
+                                node_name[1][tt_1] = copy.copy(node_name[1][tt_0])
+
+
 
                 # create edges
                 tunnel_seq_count = 1
@@ -224,12 +232,12 @@ def postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network_o
                         break
 
                 # remove edge from/to the same node
-                for tt in range(len_t):
+                for tt in reversed(range(len(net_edge_from))):
                     if net_edge_from[tt] == net_edge_to[tt]:
-                        if net_edge_len[tt] < contact_threshold:
-                            net_edge_from.pop(tt)
-                            net_edge_to.pop(tt)
-                            net_edge_len.pop(tt)
+                        print(tt)
+                        net_edge_from.pop(tt)
+                        net_edge_to.pop(tt)
+                        net_edge_len.pop(tt)
 
         # output
         if network_out:
