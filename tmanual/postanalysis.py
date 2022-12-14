@@ -82,33 +82,49 @@ def postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network_o
 
         # calculation
         if len_t > 0:
-            #  for each tunnel, [0] check from which tunnel starts and [1] check at which tunnel ends
-            #  (-1 for primary or -1 for active tunnels)
+            #  1. for each tunnel, check from which tunnel starts
+            #  Determine Primary tunnel (= not start from tunnel: >"contact_threshold" pixels)
             for tt_n in range(len_t):
-                min_dis = [99999, 99999]
-                nearest_point = [np.array([0, 0]), np.array([0,0])]
-                node_on_tunnel = [-1, -1]
+                min_dis = 99999
+                nearest_point = np.array([0,0])
                 for tt_t in range(len_t):
                     if tt_n != tt_t:
-                        for i_01 in range(2):
-                            if norm(node[i_01][tt_n]-node[0][tt_t]) > contact_threshold:
-                                ll = len(tunnel[tt_t])
-                                for ttt in range(ll - 1):
-                                    tunnel_segment = tunnel[tt_t][ttt:(ttt + 2)]
-                                    dis_temp, nearest_point_temp = node_tunnel_distance(node[0][tt_n], tunnel_segment)
-                                    if dis_temp < min_dis[i_01]:
-                                        min_dis[i_01] = dis_temp
-                                        nearest_point[i_01] = nearest_point_temp
-                                        node_on_tunnel[i_01] = tt_t
-                if min_dis[0] < contact_threshold:
+                        if norm(node[0][tt_n]-node[0][tt_t]) < contact_threshold:
+                            continue
+                        ll = len(tunnel[tt_t])
+                        for ttt in range(ll - 1):
+                            tunnel_segment = tunnel[tt_t][ttt:(ttt + 2)]
+                            dis_temp, nearest_point_temp = node_tunnel_distance(node[0][tt_n], tunnel_segment)
+                            if dis_temp < min_dis:
+                                min_dis = dis_temp
+                                nearest_point = nearest_point_temp
+                                node_on_tunnel = tt_t
+                if min_dis < contact_threshold:
                     contact_tunnelID[0][tt_n] = node_on_tunnel
                     node_nearest_point[0][tt_n] = nearest_point
                     tunnel_sequence[tt_n] = -1
 
-                if min_dis[1] < contact_threshold:
+            #  2. for each tunnel, check at which tunnel ends
+            for tt_n in range(len_t):
+                min_dis = 99999
+                nearest_point = np.array([0,0])
+                for tt_t in range(len_t):
+                    if tt_n != tt_t:
+                        if norm(node[1][tt_n]-node[1][tt_t]) < contact_threshold:
+                            continue
+                        ll = len(tunnel[tt_t])
+                        for ttt in range(ll - 1):
+                            tunnel_segment = tunnel[tt_t][ttt:(ttt + 2)]
+                            dis_temp, nearest_point_temp = node_tunnel_distance(node[1][tt_n], tunnel_segment)
+                            if dis_temp < min_dis:
+                                min_dis = dis_temp
+                                nearest_point = nearest_point_temp
+                                node_on_tunnel = tt_t
+                if min_dis < contact_threshold:
                     contact_tunnelID[1][tt_n] = node_on_tunnel
                     node_nearest_point[1][tt_n] = nearest_point
 
+            
             # determine Secondary, Tertiary, ..., tunnel
             tunnel_seq_count = 1
             while True:
@@ -172,11 +188,15 @@ def postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network_o
 
                             for ttt in range(ll-1):
                                 tunnel_segment = tunnel[tt][ttt:(ttt + 2)]
+                                dis_temp = node_tunnel_distance(nearest_point, tunnel_segment)[0]
+                                if dis_temp < 0.00001: # == 0 may be affected by float
+                                    tunnel_seg_len = tunnel_seg_len + norm(nearest_point-tunnel_segment[0])
+                                    break  
 
                                 # ---XXX todo: potentially same problem with func node_tunnel_distance
-                                if np.dot(nearest_point-tunnel_segment[0], tunnel_segment[1]-tunnel_segment[0]) == 0:
-                                    tunnel_seg_len = tunnel_seg_len + norm(nearest_point-tunnel_segment[0])
-                                    break                                
+                                #if np.dot(nearest_point-tunnel_segment[0], tunnel_segment[1]-tunnel_segment[0]) == 0:
+                                #    tunnel_seg_len = tunnel_seg_len + norm(nearest_point-tunnel_segment[0])
+                                #    break                                
                                 else:
                                     tunnel_seg_len = tunnel_seg_len + norm(tunnel_segment[1]-tunnel_segment[0])
                             list_tunnel_seg_len[nn] = tunnel_seg_len
