@@ -88,7 +88,7 @@ def gui():
          sg.Text("-Drag to set the scale  -RC to finish.")],
         [sg.Text("Post-analysis", size=(12,1)),
          sg.Text("use smaller node-gallery contact threshold for small galleries relative to image")]
-        ], size=(1000, 500))
+        ], size=(1000, 400))
     
     frame_buttons = sg.Column([[frame_measure_buttom], [frame_post_buttom]])
     frame_input = sg.Column([[frame_file],[frame_param]])
