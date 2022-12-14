@@ -70,7 +70,7 @@ def gui():
         [sg.Text("Measurement", size=(12,1)),
          sg.Text("sequentially process images with below process (LC: left click, RC: right click)")],
         [sg.Text("", size=(1,3)),
-         sg.Text("1. Analyze", size=(10,3)),
+         sg.Text("1. Check", size=(10,3)),
          sg.Text("-LC(or V):analyze  -RC(or N):skip \n"
                  "-Esc:exit (saved)  -B:previous image\n"
                  "-R:re-analyze (append to previous)  -A:re-analyze (from the scratch)")],
@@ -79,7 +79,7 @@ def gui():
          sg.Text("-LC:the same landscape point across images (used for calibration).\n"
                  "-RC:skip")],
         [sg.Text("", size=(1,3)),
-         sg.Text("3. Length", size=(10,3)),
+         sg.Text("3. Measure", size=(10,3)),
          sg.Text("-LC:measure tunnel length.  -RC to next or finish at the end.\n"
                  "-Q:undo   -Z:zoom in (x2-x8)  -X:stop zoom  -E:go-to-end  -Esc:finish\n"
                  " Branching tunnels should be on the previous tunnels line")],
