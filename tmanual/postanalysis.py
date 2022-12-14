@@ -96,7 +96,7 @@ def postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network_o
                                 for ttt in range(ll - 1):
                                     tunnel_segment = tunnel[tt_t][ttt:(ttt + 2)]
                                     dis_temp, nearest_point_temp = node_tunnel_distance(node[0][tt_n], tunnel_segment)
-                                    if dis_temp < min_dis:
+                                    if dis_temp < min_dis[i_01]:
                                         min_dis[i_01] = dis_temp
                                         nearest_point[i_01] = nearest_point_temp
                                         node_on_tunnel[i_01] = tt_t
