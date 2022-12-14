@@ -1,6 +1,6 @@
 # TManual: assisting in manual measurements of length development
 <div align="center">
-<img src="images/output.gif" title="time development of termite foraging tunnels">
+<img src="images/output.gif" title="time development of termite foraging tunnels" width="800">
 </div>
 
 This program is still beta-version. Will be released soon.    
