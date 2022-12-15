@@ -63,6 +63,10 @@ class ImgData:
             self.name = os.path.basename(img_loc)
             self.id = self.name.split('_')[0]
             if len(self.name.split("_")) > 1:
+                try:
+                    re.sub("."+file_extension, "", self.name.split('_')[1])
+                except:
+                    print("Error from TManual: Invalid file name.")
                 self.serial = int(re.sub("."+file_extension, "", self.name.split('_')[1]))
             else:
                 self.serial = 0
