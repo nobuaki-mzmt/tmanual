@@ -89,7 +89,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
 
         # region --- Load image (or skip) ---#
         i = name1[ii]
-        img_data = ImgData(i)
+        img_data = ImgData(i, None, file_extension)
         print(str(ii) + ": " + img_data.name)
 
         cur_data, pre_data = [], []
@@ -104,13 +104,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
 
         if len(cur_data_index) > 0:
             cur_data = copy.deepcopy(tmanual_output[2][cur_data_index[0]])
-            img_data.name = cur_data[0]
-            img_data.id = cur_data[1]
-            img_data.serial = cur_data[2]
-            img_data.ref_xy = cur_data[3]
-            img_data.tunnel = cur_data[4]
-            img_data.scale_xy = cur_data[5]
-            img_data.analyze_flag = cur_data[6]
+            img_data = ImgData(None, cur_data)
         if len(pre_data_index) > 0:
             pre_data = copy.deepcopy(tmanual_output[2][pre_data_index[0]])
 
