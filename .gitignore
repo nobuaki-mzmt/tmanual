@@ -3,3 +3,4 @@ tmanual/__pycache__
 standalone/tmanual_standalone.build
 standalone/tmanual_standalone.dist
 standalone/tmanual_standalone.onefile-build
+*.pyc

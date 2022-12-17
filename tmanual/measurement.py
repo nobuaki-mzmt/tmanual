@@ -89,7 +89,13 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
 
         # region --- Load image (or skip) ---#
         i = name1[ii]
-        img_data = ImgData(i, None, file_extension)
+        img_name = re.sub("."+file_extension, "", os.path.basename(i))
+        try:
+            int(img_name.split('_')[1])
+        except:
+            return("Error. Invalid filename: " + os.path.basename(i))
+        img_data = ImgData(img_name, None)
+
         print(str(ii) + ": " + img_data.name)
 
         cur_data, pre_data = [], []
