@@ -94,7 +94,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
             int(img_name.split('_')[1])
         except:
             return("Error. Invalid filename: " + os.path.basename(i))
-        img_data = ImgData(img_name, None)
+        img_data = ImgData(os.path.basename(i), None, file_extension)
 
         print(str(ii) + ": " + img_data.name)
 
@@ -104,7 +104,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
             set([i for i, x in enumerate(tmanual_output[0]) if x == img_data.id])
         )
         pre_data_index = list(
-            set([i for i, x in enumerate(tmanual_output[1]) if x == img_data.serial-1]) &
+            set([i for i, x in enumerate(tmanual_output[1]) if x < img_data.serial]) &
             set([i for i, x in enumerate(tmanual_output[0]) if x == img_data.id])
         )
 
@@ -112,7 +112,11 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
             cur_data = copy.deepcopy(tmanual_output[2][cur_data_index[0]])
             img_data = ImgData(None, cur_data)
         if len(pre_data_index) > 0:
-            pre_data = copy.deepcopy(tmanual_output[2][pre_data_index[0]])
+            close_pre_data_index = pre_data_index[0]
+            for p_ii in pre_data_index:
+                if tmanual_output[1][close_pre_data_index] < tmanual_output[1][p_ii]:
+                    close_pre_data_index = p_ii
+            pre_data = copy.deepcopy(tmanual_output[2][close_pre_data_index])
 
         # skip analyzed video
         if img_data.analyze_flag > 0:
@@ -121,6 +125,10 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
                 continue
 
         img_read = cv2.imread(i)
+        if img_read is None:
+            print("Error. file is not readable: " + os.path.basename(i) + ". Skip.")
+            ii = ii + 1
+            continue
         img_read = image_format(img_read)
         img_shape = np.array([img_read.shape[1], img_read.shape[0]])
 

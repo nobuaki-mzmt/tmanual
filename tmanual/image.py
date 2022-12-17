@@ -58,12 +58,13 @@ def image_format(img):  # all images are reformatted in 2000xH for measurement
 
 
 class ImgData:
-    def __init__(self, img_name, data_values=None):
+    def __init__(self, img_name, data_values=None, file_extension=None):
         if data_values is None:
             self.name = img_name
-            self.id = self.name.split('_')[0]
-            if len(self.name.split("_")) > 1:
-                self.serial = int(self.name.split('_')[1])
+            img_name = re.sub("."+file_extension, "", img_name)
+            self.id = img_name.split('_')[0]
+            if len(img_name.split("_")) > 1:
+                self.serial = int(img_name.split('_')[1])
             else:
                 self.serial = 0
             data_values = [self.name, self.id, self.serial, np.array([0, 0]), [], [[0, 0], [0, 0]], 0]
