@@ -270,7 +270,7 @@ def postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network_o
         if output_image:
             if os.path.exists(in_dir + img_data.name):
                 img = cv2.imread(in_dir + img_data.name)
-                img = image_format(img)
+                #img = image_format(img)
                 img_data.colored_image_output(img, tunnel_sequence, out_dir, object_size, font_size, text_drawing)
             else:
                 print(img_data.name + ": not find image file")

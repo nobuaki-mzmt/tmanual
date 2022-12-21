@@ -129,7 +129,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
             print("Error. file is not readable: " + os.path.basename(i) + ". Skip.")
             ii = ii + 1
             continue
-        img_read = image_format(img_read)
+        #img_read = image_format(img_read)
         img_shape = np.array([img_read.shape[1], img_read.shape[0]])
 
         # create window
