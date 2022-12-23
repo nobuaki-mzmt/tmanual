@@ -202,7 +202,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
     # Data read
     if os.path.exists(out_dir + "/res.pickle"):
         print("existing analysis loaded")
-        with open(out_dir + '/res.pickle', mode='rb') as f:
+        with open(out_dir+ os.sep  + 'res.pickle', mode='rb') as f:
             tmanual_output = pickle.load(f)
 
         # --- todo this part will be removed future
@@ -210,7 +210,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
         if len(tmanual_output[2][0]) > 7:
             for ii in range(len(tmanual_output[0])):
                 tmanual_output[2][ii].pop(5)
-            with open(out_dir + '/res.pickle', mode='wb') as f:
+            with open(out_dir + os.sep + 'res.pickle', mode='wb') as f:
                 pickle.dump(tmanual_output, f)
         # ----------
 
@@ -219,7 +219,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
         tmanual_output = [[], [], []]  # store Ids, Serial, Results
 
     if in_files == 0:
-        name1 = glob.glob(in_dir + r'\*.' + file_extension)
+        name1 = glob.glob(in_dir + os.sep + '*.' + file_extension)
     else:
         name1 = in_files.split(';')
     num_file = len(name1)

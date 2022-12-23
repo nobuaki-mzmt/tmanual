@@ -162,7 +162,6 @@ def gui():
                 print("input dir: "+str(in_dir))
                 print("input files: "+str(in_files))
                 print("output dir: "+out_dir)
-                print("updated")
                 message = measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object_size, font_size, text_drawing)
                 if message is not None:
                     sg.popup(message)            
