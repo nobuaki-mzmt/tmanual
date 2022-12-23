@@ -115,7 +115,7 @@ def gui():
                     in_files = values["-IN_FILES_NAME-"]
                     if len(values["-OUT_FOLDER_NAME-"]) == 0:
                         if len(values["-IN_FOLDER_NAME-"]) > 0:
-                            in_dir = values["-IN_FOLDER_NAME-"] + "/"
+                            in_dir = values["-IN_FOLDER_NAME-"] + os.sep
                             out_dir = in_dir+"/tmanual/"
                             if not os.path.exists(out_dir):
                                 os.makedirs(out_dir)
@@ -123,18 +123,18 @@ def gui():
                             print("no output directly!")
                             continue
                     else:
-                        out_dir = values["-OUT_FOLDER_NAME-"]+"/"
+                        out_dir = values["-OUT_FOLDER_NAME-"]+os.sep
                     in_dir = 0
 
                 else:
-                    in_dir = values["-IN_FOLDER_NAME-"]+"/"
+                    in_dir = values["-IN_FOLDER_NAME-"]+os.sep
                     in_files = 0
                     if len(values["-OUT_FOLDER_NAME-"]) == 0:
-                        out_dir = in_dir+"/tmanual/"
+                        out_dir = in_dir+ os.sep +"tmanual" + os.sep
                         if not os.path.exists(out_dir):
                             os.makedirs(out_dir)
                     else:
-                        out_dir = values["-OUT_FOLDER_NAME-"]+"/"
+                        out_dir = values["-OUT_FOLDER_NAME-"]+os.sep
                 
                 # parameters
                 skip_analyzed = values["-SKIP_ANALYZED-"]
@@ -178,7 +178,7 @@ def gui():
 
                 if len(values["-OUT_FOLDER_NAME-"]) == 0:
                     if len(values["-IN_FOLDER_NAME-"]) > 0:
-                        out_dir = in_dir + "/tmanual/"
+                        out_dir = in_dir + os.sep +"tmanual" + os.sep
                     else:
                         print("no input!")
                 else:

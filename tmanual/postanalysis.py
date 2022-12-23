@@ -44,8 +44,8 @@ def postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network_o
         return nt_distance, nearest_ab_point
 
     # Data read
-    if os.path.exists(out_dir + "/res.pickle"):
-        with open(out_dir + '/res.pickle', mode='rb') as f:
+    if os.path.exists(out_dir + os.sep + "res.pickle"):
+        with open(out_dir + os.sep +'res.pickle', mode='rb') as f:
             tmanual_output = pickle.load(f)
 
             # --- todo this part will be removed future
@@ -53,7 +53,7 @@ def postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network_o
             if len(tmanual_output[2][0]) > 7:
                 for ii in range(len(tmanual_output[0])):
                     tmanual_output[2][ii].pop(5)
-            with open(out_dir + '/res.pickle', mode='wb') as f:
+            with open(out_dir + os.sep +'res.pickle', mode='wb') as f:
                 pickle.dump(tmanual_output, f)
             # ----------
 
