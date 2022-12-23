@@ -1,2 +1,5 @@
+conda create -n nuitka-tmanual python=3.8.8
+conda activate nuitka-tmanual
+pip install git+https://github.com/nobuaki-mzmt/tmanual
 pip install nuitka zstandard
 nuitka --mingw64 --follow-imports --onefile tmanual_standalone.py --enable-plugin=numpy --enable-plugin=tk-inter
