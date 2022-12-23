@@ -22,6 +22,7 @@ note_pos = [40, 100]
 note_pos2 = [40, 200]
 note_pos3 = [40, 300]
 
+
 def tunnel_draw(img_t, current_tunnel_t, col_t, object_size, end_node_draw=True):
     l_t = len(current_tunnel_t)
     if l_t > 0:
@@ -65,12 +66,13 @@ def image_format(img):  # all images are reformatted in 2000xH for measurement
 
 
 class ImgData:
-    def __init__(self, img_loc, data_values=None, file_extension=None):
+    def __init__(self, img_name, data_values=None, file_extension=None):
         if data_values is None:
-            self.name = os.path.basename(img_loc)
-            self.id = self.name.split('_')[0]
-            if len(self.name.split("_")) > 1:
-                self.serial = int(re.sub("."+file_extension, "", self.name.split('_')[1]))
+            self.name = img_name
+            img_name = re.sub("."+file_extension, "", img_name)
+            self.id = img_name.split('_')[0]
+            if len(img_name.split("_")) > 1:
+                self.serial = int(img_name.split('_')[1])
             else:
                 self.serial = 0
             data_values = [self.name, self.id, self.serial, np.array([0, 0]), [], [[0, 0], [0, 0]], 0]
@@ -228,7 +230,13 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
 
         # region --- Load image (or skip) ---#
         i = name1[ii]
-        img_data = ImgData(i, None, file_extension)
+        img_name = re.sub("."+file_extension, "", os.path.basename(i))
+        try:
+            int(img_name.split('_')[1])
+        except:
+            return("Error. Invalid filename: " + os.path.basename(i))
+        img_data = ImgData(os.path.basename(i), None, file_extension)
+
         print(str(ii) + ": " + img_data.name)
 
         cur_data, pre_data = [], []
@@ -237,7 +245,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
             set([i for i, x in enumerate(tmanual_output[0]) if x == img_data.id])
         )
         pre_data_index = list(
-            set([i for i, x in enumerate(tmanual_output[1]) if x == img_data.serial-1]) &
+            set([i for i, x in enumerate(tmanual_output[1]) if x < img_data.serial]) &
             set([i for i, x in enumerate(tmanual_output[0]) if x == img_data.id])
         )
 
@@ -245,7 +253,11 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
             cur_data = copy.deepcopy(tmanual_output[2][cur_data_index[0]])
             img_data = ImgData(None, cur_data)
         if len(pre_data_index) > 0:
-            pre_data = copy.deepcopy(tmanual_output[2][pre_data_index[0]])
+            close_pre_data_index = pre_data_index[0]
+            for p_ii in pre_data_index:
+                if tmanual_output[1][close_pre_data_index] < tmanual_output[1][p_ii]:
+                    close_pre_data_index = p_ii
+            pre_data = copy.deepcopy(tmanual_output[2][close_pre_data_index])
 
         # skip analyzed video
         if img_data.analyze_flag > 0:
@@ -254,7 +266,11 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
                 continue
 
         img_read = cv2.imread(i)
-        img_read = image_format(img_read)
+        if img_read is None:
+            print("Error. file is not readable: " + os.path.basename(i) + ". Skip.")
+            ii = ii + 1
+            continue
+        #img_read = image_format(img_read)
         img_shape = np.array([img_read.shape[1], img_read.shape[0]])
 
         # create window
@@ -608,18 +624,18 @@ def postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network_o
                         if tt_0 < tt_1:
                             # start node is the same?
                             if norm(node[0][tt_0] - node[0][tt_1]) < contact_threshold:
-                                print(node_name[0][tt_1], "->", node_name[0][tt_0] )
+                                #print(node_name[0][tt_1], "->", node_name[0][tt_0] )
                                 node_name[0][tt_1] = copy.copy(node_name[0][tt_0])
                         # start-end node is the same?
                         if norm(node[0][tt_0] - node[1][tt_1]) < contact_threshold:
-                            print(node_name[1][tt_1], "->", node_name[0][tt_0] )
+                            #print(node_name[1][tt_1], "->", node_name[0][tt_0] )
                             node_name[1][tt_1] = copy.copy(node_name[0][tt_0])
                 for tt_0 in range(len_t):
                     for tt_1 in range(len_t):
                         if tt_0 < tt_1:
                             # end node is the same?
                             if norm(node[1][tt_0] - node[1][tt_1]) < contact_threshold:
-                                print(node_name[1][tt_1], "->", node_name[1][tt_0] )
+                                #print(node_name[1][tt_1], "->", node_name[1][tt_0] )
                                 node_name[1][tt_1] = copy.copy(node_name[1][tt_0])
 
 
@@ -683,7 +699,7 @@ def postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network_o
                 # remove edge from/to the same node
                 for tt in reversed(range(len(net_edge_from))):
                     if net_edge_from[tt] == net_edge_to[tt]:
-                        print(tt)
+                        #print(tt)
                         net_edge_from.pop(tt)
                         net_edge_to.pop(tt)
                         net_edge_len.pop(tt)
@@ -719,7 +735,7 @@ def postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network_o
         if output_image:
             if os.path.exists(in_dir + img_data.name):
                 img = cv2.imread(in_dir + img_data.name)
-                img = image_format(img)
+                #img = image_format(img)
                 img_data.colored_image_output(img, tunnel_sequence, out_dir, object_size, font_size, text_drawing)
             else:
                 print(img_data.name + ": not find image file")
@@ -741,7 +757,6 @@ def postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network_o
         f.close()
 
     return "Post-analysis finished"
-
 
 def gui():
     sg.theme('Dark')
@@ -893,7 +908,10 @@ def gui():
                 print("input dir: "+str(in_dir))
                 print("input files: "+str(in_files))
                 print("output dir: "+out_dir)
-                measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object_size, font_size, text_drawing)
+                message = measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object_size, font_size, text_drawing)
+                if message is not None:
+                    sg.popup(message)            
+
     
             elif event == 'post_analysis_start':
                 output_image = values["-OUTPUT_IMAGE-"]
