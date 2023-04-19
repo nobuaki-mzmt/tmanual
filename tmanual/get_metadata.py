@@ -67,29 +67,62 @@ class ExperimentMetaData:
 
 
 def node_tunnel_distance(node_p, t_seg):
-            # calculate the distance between line AB and point P
-            # also obtain the nearest point on a line AB
-            # using inner product of vector
-            # ---XXX todo: if the AP and AB is parallel but P is not on AB, this function does not work.
-            # ---However, I believe that this practically does not happen if manual analysis.
-            # ---Thus, I leave this as it is. Maybe need to be fixed in the future.
-            ap = node_p - t_seg[0]
-            bp = node_p - t_seg[1]
-            ab = t_seg[1] - t_seg[0]
-            if np.dot(ab, ap) < 0:
-                # A is the nearest
-                nt_distance = norm(ap)
-                nearest_ab_point = t_seg[0]
-            elif np.dot(ab, bp) > 0:
-                # B is the nearest
-                nt_distance = norm(bp)
-                nearest_ab_point = t_seg[1]
-            else:
-                # first obtain the nearest point on ab
-                unit_vec_ab = ab/norm(ab)
-                nearest_ab_point = t_seg[0] + unit_vec_ab*(np.dot(ap, ab)/norm(ab))
-                nt_distance = norm(node_p-nearest_ab_point)
-            return nt_distance, nearest_ab_point
+    # calculate the distance between line AB and point P
+    # also obtain the nearest point on a line AB
+    # using inner product of vector
+    # ---XXX todo: if the AP and AB is parallel but P is not on AB, this function does not work.
+    # ---However, I believe that this practically does not happen if manual analysis.
+    # ---Thus, I leave this as it is. Maybe need to be fixed in the future.
+    ap = node_p - t_seg[0]
+    bp = node_p - t_seg[1]
+    ab = t_seg[1] - t_seg[0]
+    if np.dot(ab, ap) < 0:
+        # A is the nearest
+        nt_distance = norm(ap)
+        nearest_ab_point = t_seg[0]
+    elif np.dot(ab, bp) > 0:
+        # B is the nearest
+        nt_distance = norm(bp)
+        nearest_ab_point = t_seg[1]
+    else:
+        # first obtain the nearest point on ab
+        unit_vec_ab = ab/norm(ab)
+        nearest_ab_point = t_seg[0] + unit_vec_ab*(np.dot(ap, ab)/norm(ab))
+        nt_distance = norm(node_p-nearest_ab_point)
+    return nt_distance, nearest_ab_point
+
+
+def check_intersection(t_seg, P, dis):
+    """
+    Returns a coordinate (x, y) on the tunnel segment AB that intersect with a circle with center = P and radius = dis.
+    Returns None if such C does not exist.
+    """
+    A, B = t_seg[0], t_seg[1]
+    AB = B - A
+    BP_dis = norm(B-P)
+    AP_dis = norm(A-P)
+
+    nearest_dis, nearest_point = node_tunnel_distance(P, t_seg)
+    if nearest_dis > dis:
+        return None
+    if BP_dis < dis and AP_dis < dis:
+        return None
+    
+    # Calculate the vertical distance from point P to line overlaying AB
+    unit_vec_ab = AB/norm(AB)
+    nearest_ab_point = A + unit_vec_ab*(np.dot(P-A, AB)/norm(AB))
+    distance_to_line = norm(P-nearest_ab_point)
+    
+    # Calculate the distance along line AB where point C is located
+    distance_along_line = np.sqrt(dis**2 - distance_to_line**2)
+    
+    # Calculate the coordinates of point C
+    if AP_dis > BP_dis:
+        C = nearest_ab_point - distance_along_line * unit_vec_ab   
+    else:
+        C = nearest_ab_point + distance_along_line * unit_vec_ab
+    return C
+
 
 
 def get_metadata():
@@ -108,7 +141,6 @@ def get_metadata():
     else:
         name1 = in_files.split(';')
     num_file = len(name1)
-    print(name1)
     ii = 0
     while ii < num_file:
 
@@ -272,7 +304,7 @@ def get_metadata():
     cv2.destroyAllWindows()
 
 
-def bait_post_analysis(scale_object_len = 10, max_num_virtual_bait = 7):
+def bait_post_analysis(scale_object_len = 250, max_num_virtual_bait = 7, concentric_circles = [300, 500]):
     
     # Data read (res.pickle and meta.pickle)
     if os.path.exists(in_dir + os.sep + "tmanual" + os.sep + "res.pickle"):
@@ -290,6 +322,7 @@ def bait_post_analysis(scale_object_len = 10, max_num_virtual_bait = 7):
 
     # Main
     df_bait = [["serial", "id", "name", "num_virtual_bait", "bait_id", "encounter"]]
+    df_angle = [["serial", "id", "name", "radius", "angle_rad"]]
     for i_df in tqdm(range(len(tmanual_output[0]))):
 
         # load data
@@ -346,7 +379,6 @@ def bait_post_analysis(scale_object_len = 10, max_num_virtual_bait = 7):
 
         # image
         img = cv2.imread(in_dir + os.sep + img_data.name)
-        print(in_dir + os.sep + img_data.name)
         for i in range(len(bait_positions)):
             img_copy = img.copy()
             for ii in range(len(bait_positions[i])):
@@ -358,68 +390,45 @@ def bait_post_analysis(scale_object_len = 10, max_num_virtual_bait = 7):
         # endregion ------
 
 
-        ## Angle
+        # region --- 2. Covering angle analysis ---#
+        for i in range(len(concentric_circles)):
+            circle_radius = int(concentric_circles[i]/scale_object_len*scale)
 
-        def check_intersection(t_seg, P, dis):
-            """
-            Returns a coordinate C = (x, y) on the line AB with which the distance between point P and C equals dis.
-            Returns None if such C does not exist.
-            """
-            A, B = t_seg[0], t_seg[1]
-            AB = B - A
-            BP_dis = norm(B-P)
-            AP_dis = norm(A-P)
+            circle_intersections = []
+            for tt_t in range(len_t):
+                ll = len(tunnel[tt_t])
+                for ttt in range(ll - 1):
+                    tunnel_segment = tunnel[tt_t][ttt:(ttt + 2)]
+                    circle_intersection_point = check_intersection(tunnel_segment, exp_meta_data.initial, circle_radius)
+                    if circle_intersection_point is not None:
+                        circle_intersections.append(circle_intersection_point)
 
-            nearest_dis, nearest_point = node_tunnel_distance(P, t_seg)
-            if nearest_dis > dis:
-                return None
-            if BP_dis < dis and AP_dis < dis:
-                return None
-            
-            # Calculate the vertical distance from point P to line overlaying AB
-            unit_vec_ab = AB/norm(AB)
-            nearest_ab_point = A + unit_vec_ab*(np.dot(P-A, AB)/norm(AB))
-            distance_to_line = norm(P-nearest_ab_point)
-            
-            # Calculate the distance along line AB where point C is located
-            distance_along_line = np.sqrt(dis**2 - distance_to_line**2)
-            
-            # Calculate the coordinates of point C
-            if AP_dis > BP_dis:
-                C = nearest_ab_point - distance_along_line * unit_vec_ab   
-            else:
-                C = nearest_ab_point + distance_along_line * unit_vec_ab
-            
-            return C
+            # output data
+            for tt in range(len(circle_intersections)):
+                intersection_vec = circle_intersections[tt].astype(int) - exp_meta_data.initial
+                angle_rad = math.atan2(intersection_vec[1], intersection_vec[0])
+                df_angle.append([img_data.serial, img_data.id, img_data.name, circle_radius, angle_rad])
 
-
-        #  2. 
-        concentric_circles = 300
-
-        circle_intersections = []
-        for tt_t in range(len_t):
-            ll = len(tunnel[tt_t])
-            for ttt in range(ll - 1):
-                tunnel_segment = tunnel[tt_t][ttt:(ttt + 2)]
-                circle_intersection_point = check_intersection(tunnel_segment, exp_meta_data.initial, concentric_circles)
-                if circle_intersection_point is not None:
-                    circle_intersections.append(circle_intersection_point)
-
-        img = cv2.imread(in_dir + os.sep + img_data.name)
-        img_copy = img.copy()
-        cv2.circle(img_copy, exp_meta_data.initial, 1, v_col[2], object_size)
-        cv2.circle(img_copy, exp_meta_data.initial, concentric_circles, v_col[0], object_size)
-        for ii in range(len(circle_intersections)):
-            print(norm(circle_intersections[ii]-exp_meta_data.initial))
-            cv2.circle(img_copy, circle_intersections[ii].astype(int), 1, v_col[4], object_size)
-            cv2.line(img_copy, exp_meta_data.initial, circle_intersections[ii].astype(int), v_col[4], object_size)
-        cv2.imwrite(in_dir + os.sep + 'tmanual' + os.sep + 'angle' + os.sep + "angle_" + img_data.id + "_" + str(img_data.serial) + ".jpg", img_copy)
+            # image
+            img = cv2.imread(in_dir + os.sep + img_data.name)
+            img_copy = img.copy()
+            cv2.circle(img_copy, exp_meta_data.initial, 1, v_col[2], object_size)
+            cv2.circle(img_copy, exp_meta_data.initial, circle_radius, v_col[0], object_size)
+            for ii in range(len(circle_intersections)):
+                cv2.circle(img_copy, circle_intersections[ii].astype(int), 1, v_col[4], object_size)
+                cv2.line(img_copy, exp_meta_data.initial, circle_intersections[ii].astype(int), v_col[4], object_size)
+            cv2.imwrite(in_dir + os.sep + 'tmanual' + os.sep + 'angle' + os.sep + "angle_r" + str(concentric_circles[i]) + "_" + img_data.id + "_" + str(img_data.serial) + ".jpg", img_copy)
+        # endregion ------
 
     f = open(in_dir + os.sep + "tmanual" + os.sep + "bait" + os.sep + "df_bait.csv", 'w', newline='')
     writer = csv.writer(f)
     writer.writerows(df_bait)
     f.close()
 
+    f = open(in_dir + os.sep + "tmanual" + os.sep + "angle" + os.sep + "df_angle.csv", 'w', newline='')
+    writer = csv.writer(f)
+    writer.writerows(df_angle)
+    f.close()
 
 get_metadata()
 bait_post_analysis()
