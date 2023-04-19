@@ -39,12 +39,11 @@ class ExperimentMetaData:
         self.name = data_values[0]
         self.id = data_values[1]
         self.initial = data_values[2]
-        self.arena = data_values[3]
-        self.baits = data_values[4]
-        self.analyze_flag = data_values[5]
+        self.baits = data_values[3]
+        self.analyze_flag = data_values[4]
 
     def output_meta_data(self):
-        return [self.name, self.id, self.initial, self.arena, self.baits, self.analyze_flag]
+        return [self.name, self.id, self.initial, self.baits, self.analyze_flag]
 
     def note_plot(self, img, note_message, font_size):
         cv2.putText(img, note_message+'('+self.name+')',
@@ -56,7 +55,6 @@ class ExperimentMetaData:
                     cv2.FONT_HERSHEY_SIMPLEX, font_size, (255, 0, 0), font_size, cv2.LINE_AA)
         cv2.circle(img, self.initial, object_size * 5, v_col[0], object_size)
         cv2.circle(img, self.initial, object_size, (0, 0, 0), -1)
-        cv2.rectangle(img, self.arena[0], self.arena[1], (0, 0, 255), thickness=object_size)
         for i in range(len(self.baits)):
             cv2.circle(img, self.baits[i][0], radius=int(self.baits[i][1] / 2),
                        color=(0, 0, 255), thickness=object_size)
@@ -185,54 +183,10 @@ def get_metadata():
                 press("enter")
         cv2.setMouseCallback('window', get00)
         cv2.waitKey()
-        # endregion
+        # ----- endregion
 
-        #"""
-        # region --- 2. Arena size ---#
-        img = exp_meta_data.note_plot(img_read.copy(), '2.Arena size', font_size)
-        cv2.circle(img, exp_meta_data.initial, object_size * 5, v_col[0], object_size)
-        cv2.circle(img, exp_meta_data.initial, object_size, (0, 0, 0), -1)
-        cv2.imshow(window_name, img)
-
-        def arena_size(event, x, y, flags, param):
-            nonlocal x0, y0, x1, y1, drawing
-            if event == cv2.EVENT_LBUTTONDOWN:
-                drawing = True
-                x0, y0 = x, y
-            elif event == cv2.EVENT_MOUSEMOVE:
-                if drawing:
-                    cv2.rectangle(img_copy, (x0, y0), (x, y), (0, 0, 255), thickness=2)
-            elif event == cv2.EVENT_LBUTTONUP:
-                x1, y1 = x, y
-                cv2.rectangle(img_copy, (x0, y0), (x1, y1), (0, 0, 255), thickness=2)
-                drawing = False
-            elif event == cv2.EVENT_RBUTTONDOWN:
-                if x0 > x1:
-                    x0, x1 = x1, x0
-                if y0 > y1:
-                    y0, y1 = y1, y0
-                press('f')
-            press('enter')
-
-        x0, y0, x1, y1 = 0, 0, 0, 0
-        img_copy = img.copy()
-        drawing = False
-        while True:
-            cv2.imshow('window', img_copy)
-            if drawing:
-                img_copy = img.copy()
-            cv2.setMouseCallback('window', arena_size)
-            k = cv2.waitKey(0)
-            if k == ord("f") or k == 27:
-                break
-        if k == 27:
-            break
-        exp_meta_data.arena = [np.array([x0, y0]), np.array([x1, y1])]
-        # endregion ------
-        #"""
-
-        # region --- 3. Bait locate ---#
-        img = exp_meta_data.note_plot(img_read.copy(), '3. Bait', font_size)
+        # region --- 2. Bait locate ---#
+        img = exp_meta_data.note_plot(img_read.copy(), '2. Bait', font_size)
         cv2.imshow(window_name, img)
 
         def bait_draw(event, x, y, flags, param):
@@ -275,10 +229,9 @@ def get_metadata():
                 break
         if k == 27:
             break
-        # endregion
+        # ----- endregion
 
         # region----- Output -----#
-
         exp_meta_data.analyze_done()
 
         # delete old data
@@ -300,7 +253,7 @@ def get_metadata():
             pickle.dump(exp_meta_output, f)
 
         ii = ii + 1
-        # endregion
+        # ----- endregion
     cv2.destroyAllWindows()
 
 
