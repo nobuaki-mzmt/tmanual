@@ -16,6 +16,7 @@ import math
 import tmanual
 from tqdm import tqdm
 import copy
+import csv
 
 note_pos = [40, 100]
 font_size = 2
@@ -63,6 +64,32 @@ class ExperimentMetaData:
 
     def analyze_done(self):
         self.analyze_flag = 1
+
+
+def node_tunnel_distance(node_p, t_seg):
+            # calculate the distance between line AB and point P
+            # also obtain the nearest point on a line AB
+            # using inner product of vector
+            # ---XXX todo: if the AP and AB is parallel but P is not on AB, this function does not work.
+            # ---However, I believe that this practically does not happen if manual analysis.
+            # ---Thus, I leave this as it is. Maybe need to be fixed in the future.
+            ap = node_p - t_seg[0]
+            bp = node_p - t_seg[1]
+            ab = t_seg[1] - t_seg[0]
+            if np.dot(ab, ap) < 0:
+                # A is the nearest
+                nt_distance = norm(ap)
+                nearest_ab_point = t_seg[0]
+            elif np.dot(ab, bp) > 0:
+                # B is the nearest
+                nt_distance = norm(bp)
+                nearest_ab_point = t_seg[1]
+            else:
+                # first obtain the nearest point on ab
+                unit_vec_ab = ab/norm(ab)
+                nearest_ab_point = t_seg[0] + unit_vec_ab*(np.dot(ap, ab)/norm(ab))
+                nt_distance = norm(node_p-nearest_ab_point)
+            return nt_distance, nearest_ab_point
 
 
 def get_metadata():
@@ -245,9 +272,9 @@ def get_metadata():
     cv2.destroyAllWindows()
 
 
-def bait_post_analysis():
-    scale_object_len = 10
-    # Data read
+def bait_post_analysis(scale_object_len = 10, max_num_virtual_bait = 7):
+    
+    # Data read (res.pickle and meta.pickle)
     if os.path.exists(in_dir + os.sep + "tmanual" + os.sep + "res.pickle"):
         with open(in_dir + os.sep + "tmanual" + os.sep + "res.pickle", mode='rb') as f:
             tmanual_output = pickle.load(f)
@@ -260,20 +287,21 @@ def bait_post_analysis():
     else:
         return "no meta.pickle file in " + in_dir + 'tmanual' + os.sep + 'bait'
 
+
+    # Main
+    df_bait = [["serial", "id", "name", "num_virtual_bait", "bait_id", "encounter"]]
     for i_df in tqdm(range(len(tmanual_output[0]))):
-    #for i_df in tqdm(range(1)):
+
+        # load data
         img_data = tmanual.ImgData(None, tmanual_output[2][i_df])
+        tunnel_len, scale = img_data.measure_tunnel_length(scale_object_len)
+        tunnel = img_data.tunnel
+        len_t = len(tunnel_len)
 
         exp_meta_data = ExperimentMetaData(None, None, exp_meta_output[1][exp_meta_output[0].index(img_data.id)])
 
-        tunnel_len, scale = img_data.measure_tunnel_length(scale_object_len)
 
-        tunnel = img_data.tunnel
-        node = img_data.obtain_nodes()
-
-        len_t = len(tunnel_len)
-
-        # Virtual bait encounter
+        # region --- 1. Virtual bait encounter ---#
         bait_size = int((exp_meta_data.baits[0][1] + exp_meta_data.baits[1][1]) / 2)
         bait1 = exp_meta_data.baits[0][0]
         bait2 = exp_meta_data.baits[1][0]
@@ -281,40 +309,15 @@ def bait_post_analysis():
             bait1, bait2 = bait2, bait1
 
         bait_positions = [[bait1, bait2]]
-        for i in range(1, 8, 1):
-            bait_temp = [bait1]
-            for ii in range(i+1):
+        for i in range(1, max_num_virtual_bait + 1, 1):
+            bait_temp = [bait1, bait2]
+            for ii in range(i):
                 bait_temp_temp = bait1 + (bait2 - bait1) / (i+1) * (ii+1)
                 bait_temp_temp = bait_temp_temp.astype(int)
                 bait_temp.append(bait_temp_temp)
             bait_positions.append(bait_temp)
 
-        def node_tunnel_distance(node_p, t_seg):
-            # calculate the distance between line AB and point P
-            # also obtain the nearest point on a line AB
-            # using inner product of vector
-            # ---XXX todo: if the AP and AB is parallel but P is not on AB, this function does not work.
-            # ---However, I believe that this practically does not happen if manual analysis.
-            # ---Thus, I leave this as it is. Maybe need to be fixed in the future.
-            ap = node_p - t_seg[0]
-            bp = node_p - t_seg[1]
-            ab = t_seg[1] - t_seg[0]
-            if np.dot(ab, ap) < 0:
-                # A is the nearest
-                nt_distance = norm(ap)
-                nearest_ab_point = t_seg[0]
-            elif np.dot(ab, bp) > 0:
-                # B is the nearest
-                nt_distance = norm(bp)
-                nearest_ab_point = t_seg[1]
-            else:
-                # first obtain the nearest point on ab
-                unit_vec_ab = ab/norm(ab)
-                nearest_ab_point = t_seg[0] + unit_vec_ab*(np.dot(ap, ab)/norm(ab))
-                nt_distance = norm(node_p-nearest_ab_point)
-            return nt_distance, nearest_ab_point
-
-        #  1. for each tunnel, check if contact with bait
+        # for each tunnel, check if contact with bait
         bait_contact = copy.deepcopy(bait_positions)
         for tt_b in range(len(bait_positions)):
             for tt_bb in range(len(bait_positions[tt_b])):
@@ -333,7 +336,13 @@ def bait_post_analysis():
                 else:
                     bait_contact[tt_b][tt_bb] = 0
 
-        print(bait_contact)
+        # output data
+        for tt in range(len(bait_contact)):
+            for ttt in range(len(bait_contact[tt])):
+                if ttt < 2:
+                    df_bait.append([img_data.serial, img_data.id, img_data.name, tt, "bait_" + str(ttt), bait_contact[tt][ttt] ])
+                else:
+                    df_bait.append([img_data.serial, img_data.id, img_data.name, tt, "virtual_" + str(ttt-1), bait_contact[tt][ttt] ])
 
         # image
         img = cv2.imread(in_dir + os.sep + img_data.name)
@@ -346,43 +355,40 @@ def bait_post_analysis():
                 else:
                     cv2.circle(img_copy, bait_positions[i][ii], int(bait_size/2), v_col[0], object_size)
             cv2.imwrite(in_dir + os.sep + 'tmanual' + os.sep + 'bait' + os.sep + "bait_" + img_data.id + "_" + str(img_data.serial) + "_" + str(i) + ".jpg", img_copy)
+        # endregion ------
 
 
         ## Angle
 
-        def check_intersection(A, B, P, dis):
+        def check_intersection(t_seg, P, dis):
             """
             Returns a coordinate C = (x, y) on the line AB with which the distance between point P and C equals dis.
             Returns None if such C does not exist.
             """
-            # Calculate the direction vector of line AB
+            A, B = t_seg[0], t_seg[1]
             AB = B - A
             BP_dis = norm(B-P)
             AP_dis = norm(A-P)
 
-            nearest_dis, nearest_point = node_tunnel_distance(P, [A, B])
+            nearest_dis, nearest_point = node_tunnel_distance(P, t_seg)
             if nearest_dis > dis:
                 return None
             if BP_dis < dis and AP_dis < dis:
                 return None
             
-            # Calculate the distance from point P to line AB
+            # Calculate the vertical distance from point P to line overlaying AB
             unit_vec_ab = AB/norm(AB)
             nearest_ab_point = A + unit_vec_ab*(np.dot(P-A, AB)/norm(AB))
             distance_to_line = norm(P-nearest_ab_point)
             
-            # If the distance from point P to line AB is greater than dis,
-            # then there is no point on the line AB that is dis away from point P
-            if distance_to_line > dis:
-                return None
-            
             # Calculate the distance along line AB where point C is located
             distance_along_line = np.sqrt(dis**2 - distance_to_line**2)
             
-            # Calculate the unit vector in the direction of line AB
-            
             # Calculate the coordinates of point C
-            C = nearest_ab_point + distance_along_line * unit_vec_ab
+            if AP_dis > BP_dis:
+                C = nearest_ab_point - distance_along_line * unit_vec_ab   
+            else:
+                C = nearest_ab_point + distance_along_line * unit_vec_ab
             
             return C
 
@@ -395,7 +401,7 @@ def bait_post_analysis():
             ll = len(tunnel[tt_t])
             for ttt in range(ll - 1):
                 tunnel_segment = tunnel[tt_t][ttt:(ttt + 2)]
-                circle_intersection_point = check_intersection(tunnel_segment[0], tunnel_segment[1], exp_meta_data.initial, concentric_circles)
+                circle_intersection_point = check_intersection(tunnel_segment, exp_meta_data.initial, concentric_circles)
                 if circle_intersection_point is not None:
                     circle_intersections.append(circle_intersection_point)
 
@@ -406,7 +412,13 @@ def bait_post_analysis():
         for ii in range(len(circle_intersections)):
             print(norm(circle_intersections[ii]-exp_meta_data.initial))
             cv2.circle(img_copy, circle_intersections[ii].astype(int), 1, v_col[4], object_size)
+            cv2.line(img_copy, exp_meta_data.initial, circle_intersections[ii].astype(int), v_col[4], object_size)
         cv2.imwrite(in_dir + os.sep + 'tmanual' + os.sep + 'angle' + os.sep + "angle_" + img_data.id + "_" + str(img_data.serial) + ".jpg", img_copy)
+
+    f = open(in_dir + os.sep + "tmanual" + os.sep + "bait" + os.sep + "df_bait.csv", 'w', newline='')
+    writer = csv.writer(f)
+    writer.writerows(df_bait)
+    f.close()
 
 
 get_metadata()
