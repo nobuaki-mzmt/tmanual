@@ -17,17 +17,10 @@ import tmanual
 from tqdm import tqdm
 import copy
 import csv
+import PySimpleGUI as sg
 
 note_pos = [40, 100]
-font_size = 2
-object_size = 2
-#os.chdir("F:/Dropbox/research/papers_and_projects/2022/TManual/examples/Lee-etal-2008_test")
-os.chdir("F:/Dropbox/research/papers_and_projects/2022/TManual/bait_project/example1")
 v_col = [[37, 231, 253], [98, 201, 94], [140, 145, 33],  [139, 82, 59], [84, 1, 68]]  # viridis colors in BGR
-in_files = 0
-#in_dir = "F:/Dropbox/research/papers_and_projects/2022/TManual/examples/Lee-etal-2008_test"
-in_dir = "F:/Dropbox/research/papers_and_projects/2022/TManual/bait_project/example1"
-file_extension = "jpg"
 
 
 class ExperimentMetaData:
@@ -123,22 +116,22 @@ def check_intersection(t_seg, P, dis):
 
 
 
-def get_metadata():
+def get_metadata(in_dir, out_dir, file_extension, object_size, font_size):
     # Data read
-    if os.path.exists(in_dir + os.sep + "tmanual" + os.sep + "bait" + os.sep + "meta.pickle"):
-        with open(in_dir + os.sep + "tmanual" + os.sep + "bait" + os.sep + "meta.pickle", mode='rb') as f:
+    if os.path.exists(out_dir + "bait" + os.sep + "meta.pickle"):
+        with open(out_dir + "bait" + os.sep + "meta.pickle", mode='rb') as f:
             exp_meta_output = pickle.load(f)
     else:
         print("new analysis start")
-        if not os.path.exists(in_dir + os.sep + "tmanual" + os.sep + "bait"):
-            os.makedirs(in_dir + os.sep + "tmanual" + os.sep + "bait")
+        if not os.path.exists(out_dir + "bait"):
+            os.makedirs(out_dir + os.sep + "bait")
+        if not os.path.exists(out_dir + "angle"):
+            os.makedirs(out_dir + os.sep + "angle")
         exp_meta_output = [[], []]  # store Ids, Results
 
-    if in_files == 0:
-        name1 = glob.glob(in_dir + os.sep + '*.' + file_extension)
-    else:
-        name1 = in_files.split(';')
+    name1 = glob.glob(in_dir + os.sep + '*.' + file_extension)
     num_file = len(name1)
+
     ii = 0
     while ii < num_file:
 
@@ -150,9 +143,9 @@ def get_metadata():
             ii = ii + 1
             continue
 
-        img_read = cv2.imread(image_name)
+        img_read = cv2.imread(in_dir + image_name)
         if img_read is None:
-            print("Error. file is not readable: " + image_name + ". Skip.")
+            print("Error. file is not readable: " + in_dir + image_name + ". Skip.")
             ii = ii + 1
             continue
 
@@ -249,7 +242,7 @@ def get_metadata():
         exp_meta_data.image_output(img_read.copy(), in_dir, object_size, font_size)
 
         # write
-        with open(in_dir + os.sep + 'tmanual' + os.sep + 'bait' + os.sep + 'meta.pickle', mode='wb') as f:
+        with open(out_dir + 'bait' + os.sep + 'meta.pickle', mode='wb') as f:
             pickle.dump(exp_meta_output, f)
 
         ii = ii + 1
@@ -257,7 +250,7 @@ def get_metadata():
     cv2.destroyAllWindows()
 
 
-def bait_post_analysis(scale_object_len = 250, max_num_virtual_bait = 7, concentric_circles = [300, 500]):
+def bait_post_analysis(in_dir, out_dir, scale_object_len, max_num_virtual_bait, concentric_circles, object_size, font_size):
     
     # Data read (res.pickle and meta.pickle)
     if os.path.exists(in_dir + os.sep + "tmanual" + os.sep + "res.pickle"):
@@ -360,7 +353,7 @@ def bait_post_analysis(scale_object_len = 250, max_num_virtual_bait = 7, concent
             for tt in range(len(circle_intersections)):
                 intersection_vec = circle_intersections[tt].astype(int) - exp_meta_data.initial
                 angle_rad = math.atan2(intersection_vec[1], intersection_vec[0])
-                df_angle.append([img_data.serial, img_data.id, img_data.name, circle_radius, angle_rad])
+                df_angle.append([img_data.serial, img_data.id, img_data.name, concentric_circles[i], angle_rad])
 
             # image
             img = cv2.imread(in_dir + os.sep + img_data.name)
@@ -383,5 +376,140 @@ def bait_post_analysis(scale_object_len = 250, max_num_virtual_bait = 7, concent
     writer.writerows(df_angle)
     f.close()
 
-get_metadata()
-bait_post_analysis()
+    return "Bait-analysis finished"
+
+def bait_gui():
+
+    # region -- Appearence --
+    sg.theme('LightBrown2')
+    frame_file = sg.Frame('Files', [
+        [sg.Text("In   "),
+         sg.InputText('Input folder', enable_events=True, size=(20, 1)),
+         sg.FolderBrowse(button_text='select', size=(6, 1), key="-IN_FOLDER_NAME-")
+         ],
+        [sg.Text("Out"),
+         sg.InputText('Output folder', enable_events=True, size=(20, 1)),
+         sg.FolderBrowse(button_text='select', size=(6, 1), key="-OUT_FOLDER_NAME-")
+         ],
+        [sg.Text("File extension (default = jpg)"),
+         sg.In(key='-FILE_EXTENSION-', size=(15, 1))]
+    ], size=(550, 150))
+
+    frame_param = sg.Frame('Parameters', [
+        [sg.Text("Post-analysis:", size=(12,1)), 
+         sg.Text("scale length (mm)", size=(15,1)),
+         sg.In(key='-SCALE_OBJECT-', size=(6, 1)),
+         sg.Text("Num of virtual baits (def = 7)"),
+         sg.In(key='-NUM_VIRTUAL_BAITS-', size=(6, 1))
+         ],
+        [sg.Text("", size=(12,1)),
+         sg.Text("Circles for angle calculation (mm) def = 300,500"),
+         sg.In(key='-Circle_Radius-', size=(6, 1))
+        ],
+        [sg.Text("Drawing:", size=(12,1)),
+         sg.Text("output image", size=(12,1)),
+         sg.Combo(['true', 'false'], default_value="true", size=(6, 1), key="-OUTPUT_IMAGE-")
+         ],
+        [sg.Text("", size=(12,1)),
+         sg.Text("line width (def 5)"),
+         sg.In(key='-LINE_WIDTH-', size=(6, 1)),
+
+         sg.Text("font size (def 2)"),
+         sg.In(key='-FONT_SIZE-', size=(6, 1))
+        ]
+    ], size=(750, 160))
+
+    frame_buttons = sg.Frame('', [
+        [sg.Submit(button_text='Bait analysis start', size=(20, 3), key='bait_analysis_start')]], size=(180, 100))
+    
+    frame_manual = sg.Frame('Manual', [
+        [sg.Text("Images should be named in 'id_number.jpg'\n"
+                 "    e.g., TunnelA_00.jpg, TunnelA_01.jpg, ..., TunnelA_20.jpg, TunnelB_00.jpg, TunnelB_01.jpg, ...")],
+        [sg.Text("Obtain meta data", size=(15,1))],
+        [sg.Text("", size=(1,3)),
+         sg.Text("1. Initial point", size=(15,1)),
+         sg.Text("-LC: the tunnel starting point (= center of the circule to obtain angles)")],
+        [sg.Text("", size=(1,2)),
+         sg.Text("2. Baits", size=(15,2)),
+         sg.Text("-Drag to draw circle baits\n"
+                 "-RC to go next bait. After 2 baits finished, RC to exit")]
+        ], size=(750, 250))
+    
+    layout = [[frame_file, frame_buttons], [frame_param], [frame_manual]]
+    
+    window = sg.Window('TManual additional program for bait analysis',
+                       layout, resizable=True)
+    # endregion ------
+
+    while True:
+        event, values = window.read()
+    
+        if event is None:
+            print('exit')
+            break
+        else:
+            if event == 'bait_analysis_start':
+
+                # file info
+                if len(values["-IN_FOLDER_NAME-"]) == 0:
+                    print("no input!")
+                    continue
+
+                else:
+                    in_dir = values["-IN_FOLDER_NAME-"]+os.sep
+                    if len(values["-OUT_FOLDER_NAME-"]) == 0:
+                        out_dir = in_dir+ os.sep +"tmanual" + os.sep
+                        if not os.path.exists(out_dir):
+                            print("no output directly!")
+                    else:
+                        out_dir = values["-OUT_FOLDER_NAME-"]+os.sep
+                
+                # parameters
+                try:
+                    float(values['-SCALE_OBJECT-'])
+                except ValueError:
+                    scale_object_len = float(1)
+                    print("Warning: Scale object length is not indicated. Put 1 (mm) instead.")
+                else:
+                    scale_object_len = float(values["-SCALE_OBJECT-"])
+
+                if len(values["-LINE_WIDTH-"]) == 0:
+                    object_size = 5
+                else:
+                    object_size = int(values["-LINE_WIDTH-"])
+                
+                if len(values["-FONT_SIZE-"]) == 0:
+                    font_size = 2
+                else:
+                    font_size = int(values["-FONT_SIZE-"])
+
+                if len(values["-NUM_VIRTUAL_BAITS-"]) == 0:
+                    max_num_virtual_bait = 7
+                else:
+                    max_num_virtual_bait = int(values["-NUM_VIRTUAL_BAITS-"])
+
+                if len(values["-Circle_Radius-"]) == 0:
+                    concentric_circles = [300, 500]
+                else:
+                    s = values["-Circle_Radius-"]
+                    l = [x.strip() for x in s.split(',')]
+                    concentric_circles = [int(s) for s in l]
+
+                if len(values["-FILE_EXTENSION-"]) == 0:
+                    file_extension = "jpg"
+                else:
+                    file_extension = values["-FILE_EXTENSION-"]
+
+                print("input dir: "+str(in_dir))
+                print("output dir: "+out_dir)
+
+                get_metadata(in_dir, out_dir, file_extension, object_size, font_size)
+
+                message = bait_post_analysis(in_dir, out_dir, scale_object_len, max_num_virtual_bait, concentric_circles, object_size, font_size)
+                if message is not None:
+                    sg.popup(message)            
+
+    window.close()
+
+bait_gui()
+
