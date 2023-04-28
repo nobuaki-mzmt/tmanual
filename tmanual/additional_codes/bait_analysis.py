@@ -281,6 +281,9 @@ def bait_post_analysis(in_dir, out_dir, scale_object_len, max_num_virtual_bait, 
 
         exp_meta_data = ExperimentMetaData(None, None, exp_meta_output[1][exp_meta_output[0].index(img_data.id)])
 
+        img = cv2.imread(in_dir + os.sep + img_data.name)
+        if img is None:
+            print("There is no file named " + img_data.name + "!! Cannot output the image results.")
 
         # region --- 1. Virtual bait encounter ---#
         bait_size = int((exp_meta_data.baits[0][1] + exp_meta_data.baits[1][1]) / 2)
@@ -326,15 +329,15 @@ def bait_post_analysis(in_dir, out_dir, scale_object_len, max_num_virtual_bait, 
                     df_bait.append([img_data.serial, img_data.id, img_data.name, tt, "virtual_" + str(ttt-1), bait_contact[tt][ttt] ])
 
         # image
-        img = cv2.imread(in_dir + os.sep + img_data.name)
-        for i in range(len(bait_positions)):
-            img_copy = img.copy()
-            for ii in range(len(bait_positions[i])):
-                if bait_contact[i][ii] == 1:
-                    cv2.circle(img_copy, bait_positions[i][ii], int(bait_size/2), v_col[4], object_size)
-                else:
-                    cv2.circle(img_copy, bait_positions[i][ii], int(bait_size/2), v_col[0], object_size)
-            cv2.imwrite(out_dir + os.sep + 'bait' + os.sep + "bait_" + img_data.id + "_" + str(img_data.serial) + "_" + str(i) + ".jpg", img_copy)
+        if img is not None:
+            for i in range(len(bait_positions)):
+                img_copy = img.copy()
+                for ii in range(len(bait_positions[i])):
+                    if bait_contact[i][ii] == 1:
+                        cv2.circle(img_copy, bait_positions[i][ii], int(bait_size/2), v_col[4], object_size)
+                    else:
+                        cv2.circle(img_copy, bait_positions[i][ii], int(bait_size/2), v_col[0], object_size)
+                cv2.imwrite(out_dir + os.sep + 'bait' + os.sep + "bait_" + img_data.id + "_" + str(img_data.serial) + "_" + str(i) + ".jpg", img_copy)
         # endregion ------
 
 
@@ -358,14 +361,14 @@ def bait_post_analysis(in_dir, out_dir, scale_object_len, max_num_virtual_bait, 
                 df_angle.append([img_data.serial, img_data.id, img_data.name, concentric_circles[i], angle_rad])
 
             # image
-            img = cv2.imread(in_dir + os.sep + img_data.name)
-            img_copy = img.copy()
-            cv2.circle(img_copy, exp_meta_data.initial, 1, v_col[2], object_size)
-            cv2.circle(img_copy, exp_meta_data.initial, circle_radius, v_col[0], object_size)
-            for ii in range(len(circle_intersections)):
-                cv2.circle(img_copy, circle_intersections[ii].astype(int), 1, v_col[4], object_size)
-                cv2.line(img_copy, exp_meta_data.initial, circle_intersections[ii].astype(int), v_col[4], object_size)
-            cv2.imwrite(out_dir + os.sep + 'angle' + os.sep + "angle_r" + str(concentric_circles[i]) + "_" + img_data.id + "_" + str(img_data.serial) + ".jpg", img_copy)
+            if img is not None:
+                img_copy = img.copy()
+                cv2.circle(img_copy, exp_meta_data.initial, 1, v_col[2], object_size)
+                cv2.circle(img_copy, exp_meta_data.initial, circle_radius, v_col[0], object_size)
+                for ii in range(len(circle_intersections)):
+                    cv2.circle(img_copy, circle_intersections[ii].astype(int), 1, v_col[4], object_size)
+                    cv2.line(img_copy, exp_meta_data.initial, circle_intersections[ii].astype(int), v_col[4], object_size)
+                cv2.imwrite(out_dir + os.sep + 'angle' + os.sep + "angle_r" + str(concentric_circles[i]) + "_" + img_data.id + "_" + str(img_data.serial) + ".jpg", img_copy)
         # endregion ------
 
     f = open(out_dir + os.sep + "bait" + os.sep + "df_bait.csv", 'w', newline='')
