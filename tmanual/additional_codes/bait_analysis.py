@@ -67,7 +67,7 @@ def node_tunnel_distance(node_p, t_seg):
     ap = node_p - t_seg[0]
     bp = node_p - t_seg[1]
     ab = t_seg[1] - t_seg[0]
-    if np.dot(ab, ap) < 0:
+    if norm(ab) == 0 or np.dot(ab, ap) < 0:
         # A is the nearest
         nt_distance = norm(ap)
         nearest_ab_point = t_seg[0]
@@ -97,6 +97,8 @@ def check_intersection(t_seg, P, dis):
     if nearest_dis > dis:
         return None
     if BP_dis < dis and AP_dis < dis:
+        return None
+    if norm(AB) == 0:
         return None
     
     # Calculate the vertical distance from point P to line overlaying AB
