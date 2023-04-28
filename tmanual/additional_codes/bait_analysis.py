@@ -253,17 +253,17 @@ def get_metadata(in_dir, out_dir, file_extension, object_size, font_size):
 def bait_post_analysis(in_dir, out_dir, scale_object_len, max_num_virtual_bait, concentric_circles, object_size, font_size):
     
     # Data read (res.pickle and meta.pickle)
-    if os.path.exists(in_dir + os.sep + "tmanual" + os.sep + "res.pickle"):
-        with open(in_dir + os.sep + "tmanual" + os.sep + "res.pickle", mode='rb') as f:
+    if os.path.exists(out_dir + os.sep + "res.pickle"):
+        with open(out_dir + os.sep + "res.pickle", mode='rb') as f:
             tmanual_output = pickle.load(f)
     else:
-        return "no res.pickle file in " + in_dir + "tmanual"
+        return "no res.pickle file in " + out_dir 
 
-    if os.path.exists(in_dir + os.sep + 'tmanual' + os.sep + 'bait' + os.sep + 'meta.pickle'):
-        with open(in_dir + os.sep + 'tmanual' + os.sep + 'bait' + os.sep + 'meta.pickle', mode='rb') as f:
+    if os.path.exists(out_dir + os.sep + 'bait' + os.sep + 'meta.pickle'):
+        with open(out_dir + os.sep + 'bait' + os.sep + 'meta.pickle', mode='rb') as f:
             exp_meta_output = pickle.load(f)
     else:
-        return "no meta.pickle file in " + in_dir + 'tmanual' + os.sep + 'bait'
+        return "no meta.pickle file in " + out_dir + os.sep + 'bait'
 
 
     # Main
@@ -332,7 +332,7 @@ def bait_post_analysis(in_dir, out_dir, scale_object_len, max_num_virtual_bait, 
                     cv2.circle(img_copy, bait_positions[i][ii], int(bait_size/2), v_col[4], object_size)
                 else:
                     cv2.circle(img_copy, bait_positions[i][ii], int(bait_size/2), v_col[0], object_size)
-            cv2.imwrite(in_dir + os.sep + 'tmanual' + os.sep + 'bait' + os.sep + "bait_" + img_data.id + "_" + str(img_data.serial) + "_" + str(i) + ".jpg", img_copy)
+            cv2.imwrite(out_dir + os.sep + 'bait' + os.sep + "bait_" + img_data.id + "_" + str(img_data.serial) + "_" + str(i) + ".jpg", img_copy)
         # endregion ------
 
 
@@ -363,15 +363,15 @@ def bait_post_analysis(in_dir, out_dir, scale_object_len, max_num_virtual_bait, 
             for ii in range(len(circle_intersections)):
                 cv2.circle(img_copy, circle_intersections[ii].astype(int), 1, v_col[4], object_size)
                 cv2.line(img_copy, exp_meta_data.initial, circle_intersections[ii].astype(int), v_col[4], object_size)
-            cv2.imwrite(in_dir + os.sep + 'tmanual' + os.sep + 'angle' + os.sep + "angle_r" + str(concentric_circles[i]) + "_" + img_data.id + "_" + str(img_data.serial) + ".jpg", img_copy)
+            cv2.imwrite(out_dir + os.sep + 'angle' + os.sep + "angle_r" + str(concentric_circles[i]) + "_" + img_data.id + "_" + str(img_data.serial) + ".jpg", img_copy)
         # endregion ------
 
-    f = open(in_dir + os.sep + "tmanual" + os.sep + "bait" + os.sep + "df_bait.csv", 'w', newline='')
+    f = open(out_dir + os.sep + "bait" + os.sep + "df_bait.csv", 'w', newline='')
     writer = csv.writer(f)
     writer.writerows(df_bait)
     f.close()
 
-    f = open(in_dir + os.sep + "tmanual" + os.sep + "angle" + os.sep + "df_angle.csv", 'w', newline='')
+    f = open(out_dir + os.sep + "angle" + os.sep + "df_angle.csv", 'w', newline='')
     writer = csv.writer(f)
     writer.writerows(df_angle)
     f.close()
