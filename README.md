@@ -23,6 +23,12 @@ Here is an example of creating a virtual environment for TManual.
 ```
 conda create --name tmanual python=3.9
 ```
+If this does not work, you may want to update your pip and setuptools:
+```
+python -m pip install --upgrade pip
+pip install --upgrade setuptools packaging
+```
+
 Then run the following in Python.
 ```python
 import tmanual
