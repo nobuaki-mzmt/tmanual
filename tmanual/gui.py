@@ -6,7 +6,8 @@ GUI collects parameters for analysis and run either
 """
 
 
-import PySimpleGUI as sg
+#import PySimpleGUI as sg
+import FreeSimpleGUI as sg
 import os
 
 from tmanual import measurement
