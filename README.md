@@ -14,11 +14,16 @@
 TManual can be installed as 1) a Python package, 2) an [EXE file](standalone/tmanual_standalone.exe) for Windows users, or 3) a standalone [python file](standalone/tmanual_standalone.py).
 
 ### 1. Python package
+This project has been tested with Python 3.9. 
 ```
 pip install git+https://github.com/nobuaki-mzmt/tmanual
 ```
 As all requirements will be installed together, I recommend using a virtual environment (e.g., [Anaconda](https://www.anaconda.com/)).  
-Then run the following in python.
+Here is an example of creating a virtual environment for TManual.
+```
+conda create --name tmanual python=3.9
+```
+Then run the following in Python.
 ```python
 import tmanual
 tmanual.gui()
