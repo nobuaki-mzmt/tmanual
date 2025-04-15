@@ -1,7 +1,7 @@
 # Additional code for bait analysis in TManual
 
 This is an additional code for the paper,  
----add title here---  
+**Subterranean termites (Coptotermes formosanus [Blattodea: Rhinotermitidae]) colonies can readily intercept commercial inground bait stations placed at label-prescribed distance**  
 by **Kaitlin Gazdick, Sang-Bin Lee, Nobuaki Mizumoto, Thomas Chouvenc, and Nan-Yao Su**  
   
 This study examined how termites discover bait stations that are used to manage structural pest subterranean species.  
