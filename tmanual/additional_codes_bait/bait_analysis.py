@@ -17,7 +17,8 @@ import tmanual
 from tqdm import tqdm
 import copy
 import csv
-import PySimpleGUI as sg
+#import PySimpleGUI as sg
+import FreeSimpleGUI as sg
 
 note_pos = [40, 100]
 v_col = [[37, 231, 253], [98, 201, 94], [140, 145, 33],  [139, 82, 59], [84, 1, 68]]  # viridis colors in BGR
