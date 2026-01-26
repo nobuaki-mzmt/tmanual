@@ -123,13 +123,61 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
             if skip_analyzed == "true":
                 ii = ii + 1
                 continue
+        cv2.destroyAllWindows()
+        img_read = cv2.imread(i)
+
+        if img_read is None:
+            print("Error. file is not readable: " + os.path.basename(i) + ". Skip.")
+            ii = ii + 1
+            continue
+        #img_read = image_format(img_read)
+
+        # rotate image
+        # rotation parameters
+        img_shape = np.array([img_read.shape[1], img_read.shape[0]])
+        angle = 0
+        window_name = "window"
+        cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+        scr_w, scr_h = pag.size()
+        if scr_h > scr_w * img_shape[1] / img_shape[0]:
+            cv2.resizeWindow(window_name, scr_w, int(scr_w * img_shape[1] / img_shape[0]))
+        else:
+            cv2.resizeWindow(window_name, int(scr_h * img_shape[0] / img_shape[1]), scr_h)
+
+        while True:
+            # compute rotation matrix
+            h, w = img_read.shape[:2]
+            M = cv2.getRotationMatrix2D((w//2, h//2), angle, 1.0)
+            rotated = cv2.warpAffine(img_read, M, (w, h))
+            
+            cv2.imshow(window_name, rotated)
+            
+            key = cv2.waitKey(0) & 0xFF
+            
+            if key == ord('f'):     # rotate left
+                angle -= .5
+            elif key == ord('j'):   # rotate right
+                angle += .5
+            elif key == ord('d'):   # rotate right
+                angle += 90
+            elif key == ord('k'):   # rotate right
+                angle -= 90
+            elif key == ord('s'):   # save and exit
+                cv2.imwrite(i, rotated)
+                print(f"Saved rotated image to {i}")
+                break
+            elif key == 27:         # ESC to exit without saving
+                print("Exit without saving.")
+                break
+
+        cv2.destroyAllWindows()
 
         img_read = cv2.imread(i)
         if img_read is None:
             print("Error. file is not readable: " + os.path.basename(i) + ". Skip.")
             ii = ii + 1
             continue
-        #img_read = image_format(img_read)
+
         img_shape = np.array([img_read.shape[1], img_read.shape[0]])
 
         # create window
