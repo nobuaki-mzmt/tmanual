@@ -45,7 +45,9 @@ def gui():
          sg.Text("contact thld (def 10 px)"),
           sg.In(key='-CONTACT_THRESHOLD-', size=(6, 1)),
          sg.Text("network produce", size=(12,1)),
-         sg.Combo(['true', 'false'], default_value="true", size=(6, 1), key="-NETWORK-")
+         sg.Combo(['true', 'false'], default_value="true", size=(6, 1), key="-NETWORK-"),
+         sg.Text("tunnel id", size=(12,1)),
+         sg.Combo(['true', 'false'], default_value="true", size=(6, 1), key="-ID_GET-")
         ],
         [sg.Text("Drawing:", size=(12,1)),
          sg.Text("line width (def 5)"),
@@ -210,6 +212,13 @@ def gui():
                 else:
                     text_drawing = False
 
+                tunnel_id_get = values["-ID_GET-"]
+                if tunnel_id_get == "false":
+                    tunnel_id_get = False
+                else:
+                    tunnel_id_get = True
+
+
                 if len(values["-CONTACT_THRESHOLD-"]) == 0:
                     contact_threshold = 10
                 else:
@@ -222,7 +231,8 @@ def gui():
                     network = False
                 
                 
-                message = postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network, output_image, object_size, font_size, text_drawing)
+                message = postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network, 
+                                       output_image, object_size, font_size, text_drawing, tunnel_id_get)
                 sg.popup(message)            
 
     window.close()
