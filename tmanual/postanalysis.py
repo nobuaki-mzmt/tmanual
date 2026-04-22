@@ -17,7 +17,8 @@ from tqdm import tqdm
 from tmanual.image  import tunnel_draw, outlined_text, object_drawing, image_format, ImgData
 
 
-def postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network_out, output_image, object_size, font_size, text_drawing):
+def postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network_out,
+                  output_image, object_size, font_size, text_drawing, tunnel_id_get):
     def node_tunnel_distance(node_p, t_seg):
         # calculate the distance between line AB and point P
         # also obtain the nearest point on a line AB
@@ -60,10 +61,15 @@ def postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network_o
     else:
         return "no res.pickle file in " + out_dir
 
-    df_tunnel = [["serial", "id", "name", "tunnel_length", "tunnel_sequence"]]
-    df_summary = [['serial', 'id', 'name', 'tunnel_length_total', 'tunnel_length_1st', 'tunnel_length_2nd',
-                   'tunnel_length_3rd', 'tunnel_length_4more', 'tunnel_num_total', 'tunnel_num_1st',
-                   'tunnel_num_2nd', 'tunnel_num_3rd', 'tunnel_num_4more']]
+    if tunnel_id_get:
+        df_tunnel = [["serial", "id", "name", "tunnel_length", "tunnel_sequence"]]
+        df_summary = [['serial', 'id', 'name', 'tunnel_length_total', 'tunnel_length_1st', 'tunnel_length_2nd',
+                    'tunnel_length_3rd', 'tunnel_length_4more', 'tunnel_num_total', 'tunnel_num_1st',
+                    'tunnel_num_2nd', 'tunnel_num_3rd', 'tunnel_num_4more']]
+    else:
+        df_tunnel = [["serial", "id", "name", "tunnel_length"]]
+        df_summary = [['serial', 'id', 'name', 'tunnel_length_total', 'tunnel_num_total']]
+    
     df_net = [["serial", "id", "name", "edge_from", "edge_to", "edge_len"]]
 
     for i_df in tqdm(range(len(tmanual_output[0]))):
@@ -80,200 +86,217 @@ def postanalysis(in_dir, out_dir, scale_object_len, contact_threshold, network_o
         node_nearest_point = [[np.array([0, 0])]*len_t, [np.array([0, 0])]*len_t]
         net_edge_from, net_edge_to, net_edge_len  = [], [], []
 
-        # calculation
-        if len_t > 0:
-            #  1. for each tunnel, check from which tunnel starts
-            #  Determine Primary tunnel (= not start from tunnel: >"contact_threshold" pixels)
-            for tt_n in range(len_t):
-                min_dis = 99999
-                nearest_point = np.array([0,0])
-                for tt_t in range(len_t):
-                    if tt_n != tt_t:
-                        if norm(node[0][tt_n]-node[0][tt_t]) < contact_threshold:
-                            continue
-                        ll = len(tunnel[tt_t])
-                        for ttt in range(ll - 1):
-                            tunnel_segment = tunnel[tt_t][ttt:(ttt + 2)]
-                            dis_temp, nearest_point_temp = node_tunnel_distance(node[0][tt_n], tunnel_segment)
-                            if dis_temp < min_dis:
-                                min_dis = dis_temp
-                                nearest_point = nearest_point_temp
-                                node_on_tunnel = tt_t
-                if min_dis < contact_threshold:
-                    contact_tunnelID[0][tt_n] = node_on_tunnel
-                    node_nearest_point[0][tt_n] = nearest_point
-                    tunnel_sequence[tt_n] = -1
+        if tunnel_id_get:
+            # calculation
+            if len_t > 0:
+                #  1. for each tunnel, check from which tunnel starts
+                #  Determine Primary tunnel (= not start from tunnel: >"contact_threshold" pixels)
+                for tt_n in range(len_t):
+                    min_dis = 99999
+                    nearest_point = np.array([0,0])
+                    for tt_t in range(len_t):
+                        if tt_n != tt_t:
+                            if norm(node[0][tt_n]-node[0][tt_t]) < contact_threshold:
+                                continue
+                            ll = len(tunnel[tt_t])
+                            for ttt in range(ll - 1):
+                                tunnel_segment = tunnel[tt_t][ttt:(ttt + 2)]
+                                dis_temp, nearest_point_temp = node_tunnel_distance(node[0][tt_n], tunnel_segment)
+                                if dis_temp < min_dis:
+                                    min_dis = dis_temp
+                                    nearest_point = nearest_point_temp
+                                    node_on_tunnel = tt_t
+                    if min_dis < contact_threshold:
+                        contact_tunnelID[0][tt_n] = node_on_tunnel
+                        node_nearest_point[0][tt_n] = nearest_point
+                        tunnel_sequence[tt_n] = -1
 
-            #  2. for each tunnel, check at which tunnel ends
-            for tt_n in range(len_t):
-                min_dis = 99999
-                nearest_point = np.array([0,0])
-                for tt_t in range(len_t):
-                    if tt_n != tt_t:
-                        if norm(node[1][tt_n]-node[1][tt_t]) < contact_threshold:
-                            continue
-                        ll = len(tunnel[tt_t])
-                        for ttt in range(ll - 1):
-                            tunnel_segment = tunnel[tt_t][ttt:(ttt + 2)]
-                            dis_temp, nearest_point_temp = node_tunnel_distance(node[1][tt_n], tunnel_segment)
-                            if dis_temp < min_dis:
-                                min_dis = dis_temp
-                                nearest_point = nearest_point_temp
-                                node_on_tunnel = tt_t
-                if min_dis < contact_threshold:
-                    contact_tunnelID[1][tt_n] = node_on_tunnel
-                    node_nearest_point[1][tt_n] = nearest_point
+                #  2. for each tunnel, check at which tunnel ends
+                for tt_n in range(len_t):
+                    min_dis = 99999
+                    nearest_point = np.array([0,0])
+                    for tt_t in range(len_t):
+                        if tt_n != tt_t:
+                            if norm(node[1][tt_n]-node[1][tt_t]) < contact_threshold:
+                                continue
+                            ll = len(tunnel[tt_t])
+                            for ttt in range(ll - 1):
+                                tunnel_segment = tunnel[tt_t][ttt:(ttt + 2)]
+                                dis_temp, nearest_point_temp = node_tunnel_distance(node[1][tt_n], tunnel_segment)
+                                if dis_temp < min_dis:
+                                    min_dis = dis_temp
+                                    nearest_point = nearest_point_temp
+                                    node_on_tunnel = tt_t
+                    if min_dis < contact_threshold:
+                        contact_tunnelID[1][tt_n] = node_on_tunnel
+                        node_nearest_point[1][tt_n] = nearest_point
 
-            
-            # determine Secondary, Tertiary, ..., tunnel
-            tunnel_seq_count = 1
-            while True:
-                check_tunnel = [i for i, x in enumerate(tunnel_sequence) if x == tunnel_seq_count]
-                for tt in range(len_t):
-                    if contact_tunnelID[0][tt] in check_tunnel:
-                        tunnel_sequence[tt] = tunnel_seq_count + 1
-                tunnel_seq_count = tunnel_seq_count + 1
-                if len(check_tunnel) == 0:
-                    if min(tunnel_sequence) < 0:
-                        return "Unexpected error in " + img_data.name + ": cannot get tunnel id."
-                    break
-
-            # reconstruct network structure
-            if network_out:
-
-                # naming all nodes
-                node_name = [[0]*len_t, [0]*len_t]
-                for tt in range(len_t):
-                    if contact_tunnelID[0][tt] < 0:
-                        node_name[0][tt] = "t0" + str(tt).zfill(3) + "_0"
-                    else:
-                        node_name[0][tt] = "no"+str(tt).zfill(3)+"_0"
-                    if contact_tunnelID[1][tt] < 0:
-                        node_name[1][tt] = "t1" + str(tt).zfill(3) + "_1"
-                    else:
-                        node_name[1][tt] = "no"+str(tt).zfill(3)+"_1"
-
-                # check same node with different name
-                for tt_0 in range(len_t):
-                    for tt_1 in range(len_t):
-                        if tt_0 < tt_1:
-                            # start node is the same?
-                            if norm(node[0][tt_0] - node[0][tt_1]) < contact_threshold:
-                                #print(node_name[0][tt_1], "->", node_name[0][tt_0] )
-                                node_name[0][tt_1] = copy.copy(node_name[0][tt_0])
-                        # start-end node is the same?
-                        if norm(node[0][tt_0] - node[1][tt_1]) < contact_threshold:
-                            #print(node_name[1][tt_1], "->", node_name[0][tt_0] )
-                            node_name[1][tt_1] = copy.copy(node_name[0][tt_0])
-                for tt_0 in range(len_t):
-                    for tt_1 in range(len_t):
-                        if tt_0 < tt_1:
-                            # end node is the same?
-                            if norm(node[1][tt_0] - node[1][tt_1]) < contact_threshold:
-                                #print(node_name[1][tt_1], "->", node_name[1][tt_0] )
-                                node_name[1][tt_1] = copy.copy(node_name[1][tt_0])
-
-
-
-                # create edges
+                
+                # determine Secondary, Tertiary, ..., tunnel
                 tunnel_seq_count = 1
                 while True:
                     check_tunnel = [i for i, x in enumerate(tunnel_sequence) if x == tunnel_seq_count]
-                    for tt in check_tunnel:
-                        ll = len(tunnel[tt])
-
-                        # make a list of nodes that exist on the check_tunnel
-                        list_start_node_on_tunnel = [i for i, x in enumerate(contact_tunnelID[0]) if x == tt]
-                        list_end_node_on_tunnel   = [i for i, x in enumerate(contact_tunnelID[1]) if x == tt]
-                        list_node_on_tunnel = list_start_node_on_tunnel + list_end_node_on_tunnel
-                        list_start_or_end = [0]*len(list_start_node_on_tunnel) + [1]*len(list_end_node_on_tunnel)
-                        list_tunnel_seg_len = np.array([0]*len(list_node_on_tunnel))
-
-                        # prep for measuring edge length
-                        for nn in range(len(list_node_on_tunnel)):
-                            tunnel_seg_len = 0
-                            nearest_point = node_nearest_point[list_start_or_end[nn]][list_node_on_tunnel[nn]]
-
-                            for ttt in range(ll-1):
-                                tunnel_segment = tunnel[tt][ttt:(ttt + 2)]
-                                dis_temp = node_tunnel_distance(nearest_point, tunnel_segment)[0]
-                                if dis_temp < 0.00001: # == 0 may be affected by float
-                                    tunnel_seg_len = tunnel_seg_len + norm(nearest_point-tunnel_segment[0])
-                                    break  
-                                else:
-                                    tunnel_seg_len = tunnel_seg_len + norm(tunnel_segment[1]-tunnel_segment[0])
-                            list_tunnel_seg_len[nn] = tunnel_seg_len
-                        
-                        list_tunnel_seg_len = list_tunnel_seg_len/scale*scale_object_len
-
-                        # reconstruct node-edge structures
-                        net_edge_from.append(node_name[0][tt])
-
-                        if len(list_node_on_tunnel) > 0:
-                            tunnel_seg_len_order = np.argsort(list_tunnel_seg_len)
-
-                            for nn in range(len(list_node_on_tunnel)):
-                                node_temp = tunnel_seg_len_order[nn]
-                                net_edge_to.append(node_name[list_start_or_end[node_temp]][list_node_on_tunnel[node_temp]])
-                                if nn > 0:
-                                    net_edge_len.append(list_tunnel_seg_len[tunnel_seg_len_order[nn]] - list_tunnel_seg_len[tunnel_seg_len_order[nn-1]])
-                                else:
-                                    net_edge_len.append(list_tunnel_seg_len[tunnel_seg_len_order[nn]])
-                                net_edge_from.append(node_name[list_start_or_end[node_temp]][list_node_on_tunnel[node_temp]])
-
-                            net_edge_to.append(node_name[1][tt])
-                            net_edge_len.append(tunnel_len[tt] - list_tunnel_seg_len[tunnel_seg_len_order[len(list_node_on_tunnel)-1]])
-                        else:
-                            net_edge_to.append(node_name[1][tt])
-                            net_edge_len.append(tunnel_len[tt])
-
+                    for tt in range(len_t):
+                        if contact_tunnelID[0][tt] in check_tunnel:
+                            tunnel_sequence[tt] = tunnel_seq_count + 1
                     tunnel_seq_count = tunnel_seq_count + 1
                     if len(check_tunnel) == 0:
+                        if min(tunnel_sequence) < 0:
+                            suspicious_tunnels = check_tunnel = [i for i, x in enumerate(tunnel_sequence) if x < 0]
+                            return ("Unexpected error in " + img_data.name + 
+                                ": looping suspected. Check these tunnel indices: " + 
+                                ", ".join(map(str, suspicious_tunnels)) + 
+                                ". If you only need tunnel length, use tunnel_id_get=False")
                         break
 
-                # remove edge from/to the same node
-                for tt in reversed(range(len(net_edge_from))):
-                    if net_edge_from[tt] == net_edge_to[tt]:
-                        #print(tt)
-                        net_edge_from.pop(tt)
-                        net_edge_to.pop(tt)
-                        net_edge_len.pop(tt)
+                # reconstruct network structure
+                if network_out:
 
-        # output
-        if network_out:
-            for tt in range(len(net_edge_from)):
-                df_net.append([img_data.serial, img_data.id, img_data.name, net_edge_from[tt], net_edge_to[tt], net_edge_len[tt]])
-        
-        for tt in range(len(tunnel_len)):
-            df_tunnel.append([img_data.serial, img_data.id, img_data.name, tunnel_len[tt], tunnel_sequence[tt]])
+                    # naming all nodes
+                    node_name = [[0]*len_t, [0]*len_t]
+                    for tt in range(len_t):
+                        if contact_tunnelID[0][tt] < 0:
+                            node_name[0][tt] = "t0" + str(tt).zfill(3) + "_0"
+                        else:
+                            node_name[0][tt] = "no"+str(tt).zfill(3)+"_0"
+                        if contact_tunnelID[1][tt] < 0:
+                            node_name[1][tt] = "t1" + str(tt).zfill(3) + "_1"
+                        else:
+                            node_name[1][tt] = "no"+str(tt).zfill(3)+"_1"
 
-        tunnel_length_total = sum(tunnel_len)
-        tunnel_length_1st, tunnel_length_2nd, tunnel_length_3rd, tunnel_length_4more = 0, 0, 0, 0
-        tunnel_sequence = [4 if i > 3 else i for i in tunnel_sequence]
-        for tt in range(len(tunnel_len)):
-            if tunnel_sequence[tt] == 1:
-                tunnel_length_1st = tunnel_length_1st + tunnel_len[tt]
-            if tunnel_sequence[tt] == 2:
-                tunnel_length_2nd = tunnel_length_2nd + tunnel_len[tt]
-            if tunnel_sequence[tt] == 3:
-                tunnel_length_3rd = tunnel_length_3rd + tunnel_len[tt]
-            if tunnel_sequence[tt] == 4:
-                tunnel_length_4more = tunnel_length_4more + tunnel_len[tt]
+                    # check same node with different name
+                    for tt_0 in range(len_t):
+                        for tt_1 in range(len_t):
+                            if tt_0 < tt_1:
+                                # start node is the same?
+                                if norm(node[0][tt_0] - node[0][tt_1]) < contact_threshold:
+                                    #print(node_name[0][tt_1], "->", node_name[0][tt_0] )
+                                    node_name[0][tt_1] = copy.copy(node_name[0][tt_0])
+                            # start-end node is the same?
+                            if norm(node[0][tt_0] - node[1][tt_1]) < contact_threshold:
+                                #print(node_name[1][tt_1], "->", node_name[0][tt_0] )
+                                node_name[1][tt_1] = copy.copy(node_name[0][tt_0])
+                    for tt_0 in range(len_t):
+                        for tt_1 in range(len_t):
+                            if tt_0 < tt_1:
+                                # end node is the same?
+                                if norm(node[1][tt_0] - node[1][tt_1]) < contact_threshold:
+                                    #print(node_name[1][tt_1], "->", node_name[1][tt_0] )
+                                    node_name[1][tt_1] = copy.copy(node_name[1][tt_0])
 
-        df_append = [img_data.serial, img_data.id, img_data.name, tunnel_length_total, tunnel_length_1st,
-                     tunnel_length_2nd, tunnel_length_3rd, tunnel_length_4more, len(tunnel_len),
-                     tunnel_sequence.count(1), tunnel_sequence.count(2), tunnel_sequence.count(3),
-                     tunnel_sequence.count(4)]
-        df_summary.append(df_append)
 
-        # image output
-        if output_image:
-            if os.path.exists(in_dir + img_data.name):
-                img = cv2.imread(in_dir + img_data.name)
-                #img = image_format(img)
-                img_data.colored_image_output(img, tunnel_sequence, out_dir, object_size, font_size, text_drawing)
-            else:
-                print(img_data.name + ": not find image file")
+
+                    # create edges
+                    tunnel_seq_count = 1
+                    while True:
+                        check_tunnel = [i for i, x in enumerate(tunnel_sequence) if x == tunnel_seq_count]
+                        for tt in check_tunnel:
+                            ll = len(tunnel[tt])
+
+                            # make a list of nodes that exist on the check_tunnel
+                            list_start_node_on_tunnel = [i for i, x in enumerate(contact_tunnelID[0]) if x == tt]
+                            list_end_node_on_tunnel   = [i for i, x in enumerate(contact_tunnelID[1]) if x == tt]
+                            list_node_on_tunnel = list_start_node_on_tunnel + list_end_node_on_tunnel
+                            list_start_or_end = [0]*len(list_start_node_on_tunnel) + [1]*len(list_end_node_on_tunnel)
+                            list_tunnel_seg_len = np.array([0]*len(list_node_on_tunnel))
+
+                            # prep for measuring edge length
+                            for nn in range(len(list_node_on_tunnel)):
+                                tunnel_seg_len = 0
+                                nearest_point = node_nearest_point[list_start_or_end[nn]][list_node_on_tunnel[nn]]
+
+                                for ttt in range(ll-1):
+                                    tunnel_segment = tunnel[tt][ttt:(ttt + 2)]
+                                    dis_temp = node_tunnel_distance(nearest_point, tunnel_segment)[0]
+                                    if dis_temp < 0.00001: # == 0 may be affected by float
+                                        tunnel_seg_len = tunnel_seg_len + norm(nearest_point-tunnel_segment[0])
+                                        break  
+                                    else:
+                                        tunnel_seg_len = tunnel_seg_len + norm(tunnel_segment[1]-tunnel_segment[0])
+                                list_tunnel_seg_len[nn] = tunnel_seg_len
+                            
+                            list_tunnel_seg_len = list_tunnel_seg_len/scale*scale_object_len
+
+                            # reconstruct node-edge structures
+                            net_edge_from.append(node_name[0][tt])
+
+                            if len(list_node_on_tunnel) > 0:
+                                tunnel_seg_len_order = np.argsort(list_tunnel_seg_len)
+
+                                for nn in range(len(list_node_on_tunnel)):
+                                    node_temp = tunnel_seg_len_order[nn]
+                                    net_edge_to.append(node_name[list_start_or_end[node_temp]][list_node_on_tunnel[node_temp]])
+                                    if nn > 0:
+                                        net_edge_len.append(list_tunnel_seg_len[tunnel_seg_len_order[nn]] - list_tunnel_seg_len[tunnel_seg_len_order[nn-1]])
+                                    else:
+                                        net_edge_len.append(list_tunnel_seg_len[tunnel_seg_len_order[nn]])
+                                    net_edge_from.append(node_name[list_start_or_end[node_temp]][list_node_on_tunnel[node_temp]])
+
+                                net_edge_to.append(node_name[1][tt])
+                                net_edge_len.append(tunnel_len[tt] - list_tunnel_seg_len[tunnel_seg_len_order[len(list_node_on_tunnel)-1]])
+                            else:
+                                net_edge_to.append(node_name[1][tt])
+                                net_edge_len.append(tunnel_len[tt])
+
+                        tunnel_seq_count = tunnel_seq_count + 1
+                        if len(check_tunnel) == 0:
+                            break
+
+                    # remove edge from/to the same node
+                    for tt in reversed(range(len(net_edge_from))):
+                        if net_edge_from[tt] == net_edge_to[tt]:
+                            #print(tt)
+                            net_edge_from.pop(tt)
+                            net_edge_to.pop(tt)
+                            net_edge_len.pop(tt)
+
+            # output
+            if network_out:
+                for tt in range(len(net_edge_from)):
+                    df_net.append([img_data.serial, img_data.id, img_data.name, net_edge_from[tt], net_edge_to[tt], net_edge_len[tt]])
+            
+            for tt in range(len(tunnel_len)):
+                df_tunnel.append([img_data.serial, img_data.id, img_data.name, tunnel_len[tt], tunnel_sequence[tt]])
+
+            tunnel_length_total = sum(tunnel_len)
+            tunnel_length_1st, tunnel_length_2nd, tunnel_length_3rd, tunnel_length_4more = 0, 0, 0, 0
+            tunnel_sequence = [4 if i > 3 else i for i in tunnel_sequence]
+            for tt in range(len(tunnel_len)):
+                if tunnel_sequence[tt] == 1:
+                    tunnel_length_1st = tunnel_length_1st + tunnel_len[tt]
+                if tunnel_sequence[tt] == 2:
+                    tunnel_length_2nd = tunnel_length_2nd + tunnel_len[tt]
+                if tunnel_sequence[tt] == 3:
+                    tunnel_length_3rd = tunnel_length_3rd + tunnel_len[tt]
+                if tunnel_sequence[tt] == 4:
+                    tunnel_length_4more = tunnel_length_4more + tunnel_len[tt]
+
+            df_append = [img_data.serial, img_data.id, img_data.name, tunnel_length_total, tunnel_length_1st,
+                        tunnel_length_2nd, tunnel_length_3rd, tunnel_length_4more, len(tunnel_len),
+                        tunnel_sequence.count(1), tunnel_sequence.count(2), tunnel_sequence.count(3),
+                        tunnel_sequence.count(4)]
+            df_summary.append(df_append)
+
+            # image output
+            if output_image:
+                if os.path.exists(in_dir + img_data.name):
+                    img = cv2.imread(in_dir + img_data.name)
+                    #img = image_format(img)
+                    img_data.colored_image_output(img, tunnel_sequence, out_dir, object_size, font_size, text_drawing)
+                else:
+                    print(img_data.name + ": not find image file")
+
+        else:
+            for tt in range(len(tunnel_len)):
+                df_tunnel.append([img_data.serial, img_data.id, img_data.name, tunnel_len[tt]])
+
+            tunnel_length_total = sum(tunnel_len)
+            
+            df_append = [img_data.serial, img_data.id, img_data.name, tunnel_length_total, len(tunnel_len)]
+            df_summary.append(df_append)
+
+            
+
 
     f = open(out_dir+'df_tunnel.csv', 'w', newline='')
     writer = csv.writer(f)
