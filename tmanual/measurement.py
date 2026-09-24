@@ -266,7 +266,7 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
                 img_data.tunnel.append(current_tunnel)
             elif k == ord("f"):
                 break
-            elif k == ord("z"):
+            elif k == ord("z"): # Zoom
                 if zoom[1] == 2 and zoom[2] == 1:
                     img, zoom_xy[2], zoom[2] = zoom_func(img, mouse_xy, img_shape, zoom[2])
                 elif zoom[0] == 2 and zoom[1] == 1:
@@ -274,13 +274,12 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
                 elif zoom[0] == 1:
                     img, zoom_xy[0], zoom[0] = zoom_func(img, mouse_xy, img_shape, zoom[0])
                 
-            elif k == ord("q"):
+            elif k == ord("q"): # Redo
                 if count > 0:
                     img_data.tunnel.pop(-1)
                     count = count - 1
 
-            if k == ord("x") or k == ord("q"):
-                # cancel zoom when redo
+            if k == ord("x") or k == ord("q"): # cancel zoom when redo
                 img = img_undo.copy()
                 img = object_drawing(img, img_data.ref_xy, None, img_data.tunnel[0:count], 
                                      0, v_col[4], object_size, font_size, draw_number=False)
@@ -296,8 +295,12 @@ def measurement(in_dir, in_files, out_dir, skip_analyzed, file_extension, object
                         img_data.tunnel.append(current_tunnel)
                         count = count + 1
 
-            if k == 27:
+            if k == 27 or (k == ord("b") and ii > 0): # back or escape
                 break
+        if k == ord("b"):
+            ii = ii - 1
+            skip_analyzed = False
+            continue
         if k == 27:
             break
 
